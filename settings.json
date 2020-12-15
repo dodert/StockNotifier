@@ -1,0 +1,202 @@
+{
+    "enviroment": "production",
+    "writelog": true,
+    "delayIfException": 60,
+    "delayPerItem": 2,
+    "readConfigEachSeconds": 1200,
+    "stopProcess": false,
+    "delayBetweenNotifications": 300,
+    "filetoLog": "log.txt",
+    "disablePushForAll": false,
+    "onlySendPushWhenMatchPrice": false,
+    "showConfigInfo": false,
+    "timeoutRequest": {
+        "pccomponentes": 5,
+        "amazon": 5,
+        "game": 5,
+        "coolmod": 10,
+        "mediamark": 5
+    },
+    "items": [
+        {
+            "name": "Consola Playstation 5",
+            "store": "mediamark",
+            "url": "https://www.mediamarkt.es/es/product/_consola-sony-ps5-825-gb-4k-hdr-blanco-1487016.html",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"],
+            "desiredPrice": 499,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Consola Playstation 5 Digital",
+            "store": "mediamark",
+            "url": "https://www.mediamarkt.es/es/product/_consola-sony-ps5-digital-edition-825-gb-4k-hdr-blanco-1487015.html",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"],
+            "desiredPrice": 399,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "tableta",
+            "store": "mediamark",
+            "url": "https://www.mediamarkt.es/es/product/_tablet-lenovo-tab-m10-32-gb-negro-wifi-10-1-hd-2-gb-ram-snapdragon-429-android-1466029.html",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 160,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Ryzen 9 5900X",
+            "store": "coolmod",
+            "url": "https://www.coolmod.com/amd-ryzen-9-5900x-48ghz-socket-am4-boxed-procesador-precio",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 599,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "asdfasdf",
+            "store": "coolmod",
+            "url": "https://www.coolmod.com/amd-ryzen-7-3700x-wraith-prism-44ghz-socket-am4-boxed-procesador-precio",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 399,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "PlayStation 5 Digital",
+            "store": "coolmod",
+            "url": "https://www.coolmod.com/sony-playstation-5-edician-digital-consola-precio",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"],
+            "desiredPrice": 399,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "PlayStation 5",
+            "store": "coolmod",
+            "url": "https://www.coolmod.com/sony-playstation-5-consola-precio",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"],
+            "desiredPrice": 499,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Ryzen 9 5900X",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/amd-ryzen-9-5900x-37-ghz",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 599.10,
+            "desiredPriceOffset": 20
+        },
+        {
+            "name": "Ryzen 9 5700X",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/amd-ryzen-7-3700x-36ghz-box",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 320,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Asus tuf 3080",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/asus-tuf-geforce-rtx-3080-10gb-gddr6x",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 780.10,
+            "desiredPriceOffset": 20
+        },
+        {
+            "name": "test gigaby",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/gigabyte-b365m-ds3h",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 599.10,
+            "desiredPriceOffset": 20
+        },
+        {
+            "name": "SSD Samsung 980 Pro 1TB",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/samsung-980-pro-ssd-1tb-pcie-nvme-m2",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 250,
+            "desiredPriceOffset": 10
+        },
+        {
+            "store": "game",
+            "name": "Busqueda Playstation 5 Consola",
+            "type": "Search",
+            "url": "https://www.game.es/api/search",
+            "criteria": { "MinPrice": null, "MaxPrice": null, "Head": "consola-playstation-5", "SKU": "", "Order": 7, "CategoryFilter": [], "Category": null, "TotalPages": null, "FirstSearch": true, "Page": 0 },
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"]
+        },
+        {
+            "store": "game",
+            "name": "test persona 5",
+            "type": "Search",
+            "url": "https://www.game.es/api/search",
+            "criteria": { "MinPrice": null, "MaxPrice": null, "Head": "persona-5-strikers-limited-edition", "SKU": "", "Order": 7, "CategoryFilter": [], "Category": null, "TotalPages": null, "FirstSearch": true, "Page": 0 },
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": ["benja"]
+        },
+        {
+            "store": "amazon",
+            "name": "Playstation 5 Consola",
+            "url": "https://www.amazon.es/dp/B08KKJ37F7",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"],
+            "desiredPrice": 250,
+            "desiredPriceOffset": 10
+        },
+        {
+            "store": "amazon",
+            "name": "Dremel 4300",
+            "url": "https://www.amazon.es/dp/B074G23S52",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": ["benja"],
+            "desiredPrice": 250,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Consola Playstation 5",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/sony-playstation-5",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"],
+            "desiredPrice": 499,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Consola Playstation 5 Digital",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/sony-playstation-5-edicion-digital",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": ["benja", "hector"],
+            "desiredPrice": 399,
+            "desiredPriceOffset": 10
+        }
+    ]
+}
