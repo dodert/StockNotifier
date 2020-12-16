@@ -8,6 +8,7 @@ from datetime import datetime
 from http import HTTPStatus
 import re
 import unicodedata
+import concurrent.futures
 #from circuitbreaker import circuit
 #from circuitbreaker import CircuitBreaker
 #from html.parser import HTMLParser
@@ -637,69 +638,75 @@ def readConfigFile():
                 + f'\turl_push: {settings.timeoutRequest}'
                 )
 
-readConfigFile()
+def main():
+    readConfigFile()
 
-if settings.readConfigEachSeconds > 0:
-    session_coolmod:requests.Session = None
-    session_pccomponentes:requests.Session = None
-    session_game:requests.Session = None
-    session_amazon:requests.Session = None
-    session_mediamark:requests.Session = None
+    if settings.readConfigEachSeconds > 0:
+        session_coolmod:requests.Session = None
+        session_pccomponentes:requests.Session = None
+        session_game:requests.Session = None
+        session_amazon:requests.Session = None
+        session_mediamark:requests.Session = None
 
-    lastReadConfigTime = datetime.utcnow()    
-    while True:
-        f = open(settings.filetoLog, "a")
-        try:
-            for item in settings.itemsToLookFor:
-                store = item['store']
-                type_ = ''
-                if "type" in item: type_ = item['type']
-                return_satus: bool = False
+        lastReadConfigTime = datetime.utcnow()   
+        #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        while True:
+            global f
+            f = open(settings.filetoLog, "a")
+            try:
+                for item in settings.itemsToLookFor:
+                    store = item['store']
+                    type_ = ''
+                    if "type" in item: type_ = item['type']
+                    return_satus: bool = False
 
-                if store == 'pccomponentes':
-                    if session_pccomponentes is None: session_pccomponentes = requests.Session()
-                    return_satus = search_in_pccomponentes_store(item, session_pccomponentes)
-                    #return_satus = search_in_pccomponentes_store_v2(item)
-                    
-                elif store == 'game' and type_ == 'Search':
-                    if session_game is None: session_game = requests.Session()
-                    return_satus = search_in_game_store_by_search(item, session_game)
-                elif store == 'amazon':
-                    if session_amazon is None: session_amazon = requests.Session()
-                    return_satus = search_in_amazon(item, session_amazon)
-                elif store == 'coolmod':
-                    if session_coolmod is None: session_coolmod = requests.Session()
-                    return_satus = search_in_coolmod(item, session_coolmod)
-                elif store == 'mediamark':
-                    if session_mediamark is None: session_mediamark = requests.Session()
-                    return_satus = search_in_mediamark(item, session_mediamark)
-                    
-                else:
-                    continue
+                    if store == 'pccomponentes':
+                        if session_pccomponentes is None: session_pccomponentes = requests.Session()
+                        return_satus = search_in_pccomponentes_store(item, session_pccomponentes)
+                        #return_satus = search_in_pccomponentes_store_v2(item)
+                        
+                    elif store == 'game' and type_ == 'Search':
+                        if session_game is None: session_game = requests.Session()
+                        return_satus = search_in_game_store_by_search(item, session_game)
+                    elif store == 'amazon':
+                        if session_amazon is None: session_amazon = requests.Session()
+                        return_satus = search_in_amazon(item, session_amazon)
+                    elif store == 'coolmod':
+                        if session_coolmod is None: session_coolmod = requests.Session()
+                        return_satus = search_in_coolmod(item, session_coolmod)
+                    elif store == 'mediamark':
+                        if session_mediamark is None: session_mediamark = requests.Session()
+                        return_satus = search_in_mediamark(item, session_mediamark)
+                        
+                    else:
+                        continue
 
-                f.flush()
-                if return_satus:
-                    time.sleep(settings.delayPerItem)
-        except Exception as e:
-            print (f'{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\t {bcolors.RED}Error unknow {bcolors.ENDC}\n{e}')  
-            time.sleep(settings.delayIfException) 
-            continue
+                    f.flush()
+                    if return_satus:
+                        time.sleep(settings.delayPerItem)
+            except Exception as e:
+                print (f'{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\t {bcolors.RED}Error unknow {bcolors.ENDC}\n{e}')  
+                time.sleep(settings.delayIfException) 
+                continue
 
-        offset = datetime.utcnow() - lastReadConfigTime
+            offset = datetime.utcnow() - lastReadConfigTime
 
-        if offset.total_seconds() > settings.readConfigEachSeconds:
-            f.write(f'\nReading config file again')
-            print(f'Reading config file again')
-            readConfigFile()
-            lastReadConfigTime = datetime.utcnow()
+            if offset.total_seconds() > settings.readConfigEachSeconds:
+                f.write(f'\nReading config file again')
+                print(f'Reading config file again')
+                readConfigFile()
+                lastReadConfigTime = datetime.utcnow()
 
-        if settings.stopProcess == True:
-            f.write(f'\nProcess stopped')
-            print(f'Process stopped')
+            if settings.stopProcess == True:
+                f.write(f'\nProcess stopped')
+                print(f'Process stopped')
+                f.close()
+                break
             f.close()
-            break
-        f.close()
-    
-else:
-    f.write(f'\nreadConfigEachSeconds not configured!!!!')
-    print('readConfigEachSeconds not configured!!!!')
+        
+    else:
+        f.write(f'\nreadConfigEachSeconds not configured!!!!')
+        print('readConfigEachSeconds not configured!!!!')
+
+if __name__ == '__main__':
+    main()
