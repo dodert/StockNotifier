@@ -46,6 +46,7 @@ class settings:
     users_pushKeys = ''
     itemsToLookFor = []
     group_by_store = defaultdict(list)
+    storeConfig = []
     
 class aux:
     lastNotificationSendTime = datetime(2000,1,1,0,0,0,0)
@@ -599,7 +600,6 @@ def process_pccpmponentes(items):
         if return_satus:
             time.sleep(settings.delayPerItem)
     
-
 def readConfigFile():
 
     with open("settings.json", "r") as read_file :
@@ -615,8 +615,20 @@ def readConfigFile():
         if "delayPerItem" in filejson: settings.delayPerItem = filejson['delayPerItem']
         if "timeoutRequest" in filejson: settings.timeoutRequest = filejson['timeoutRequest']
 
+        
+        if "storeConfig" in filejson: settings.storeConfig = filejson['storeConfig']
+
         settings.disablePushForAll = filejson['disablePushForAll']
         settings.itemsToLookFor = filejson['items']
+
+
+        #todo finish to get the list from json
+        asdf = settings.storeConfig['pccomponentes']
+        #generate the functions
+        for item22 in dict(settings.storeConfig):
+            asdfasdf = item22['function']
+            item22['function'] = globals()[item22['function']]
+
 
         settings.group_by_store.clear()
 
@@ -659,7 +671,10 @@ def main_v2():
     #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
     for itemsStore in settings.group_by_store:
         if itemsStore == 'pccomponentes':
-            process_pccpmponentes (settings.group_by_store[itemsStore])
+
+            function = globals()[settings.storeConfig[itemsStore]['function']]
+            function(settings.group_by_store[itemsStore])
+           #process_pccpmponentes (settings.group_by_store[itemsStore])
     f.close()
 
 def main():

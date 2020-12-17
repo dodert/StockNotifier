@@ -10,6 +10,29 @@
     "disablePushForAll": false,
     "onlySendPushWhenMatchPrice": false,
     "showConfigInfo": false,
+    "storeConfig":{
+        "pccomponentes":{
+            "function": "process_pccpmponentes",
+            "timeoutRequest": 5
+        },
+        "amazon":{
+            "function": "process_amazon",
+            "timeoutRequest": 5
+        },
+        "game":{
+            "function": "process_game",
+            "timeoutRequest": 5
+        },
+        "coolmod":{
+            "function": "process_coolmod",
+            "timeoutRequest": 5
+        },
+        "mediamark":{
+            "function": "process_mediamark",
+            "timeoutRequest": 5
+        }
+
+    },
     "timeoutRequest": {
         "pccomponentes": 5,
         "amazon": 5,
