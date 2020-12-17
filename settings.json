@@ -3,7 +3,7 @@
     "writelog": true,
     "delayIfException": 60,
     "delayPerItem": 1,
-    "readConfigEachSeconds": 20,
+    "readConfigEachSeconds": 60,
     "stopProcess": false,
     "delayBetweenNotifications": 300,
     "filetoLog": "log.txt",

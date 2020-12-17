@@ -30,6 +30,16 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+class store_config:
+    name:str
+    function = None
+    timeoutRequest: int
+    eppepe:str
+    def __init__(self, name:str, function, timeoutRequest):
+        self.name = name
+        self.function = function
+        self.timeoutRequest = timeoutRequest
+
 class settings:
     enviroment: str
     url_push: str
@@ -46,7 +56,7 @@ class settings:
     users_pushKeys = ''
     itemsToLookFor = []
     group_by_store = defaultdict(list)
-    storeConfig = []
+    storeConfig = defaultdict(list)
     
 class aux:
     lastNotificationSendTime = datetime(2000,1,1,0,0,0,0)
@@ -591,7 +601,6 @@ def search_in_mediamark(item, session:requests.Session):
         return True
 
 def process_pccpmponentes(items):
-    
     session_pccomponentes:requests.Session = None
     if session_pccomponentes is None: session_pccomponentes = requests.Session()
     for item in items:
@@ -599,7 +608,43 @@ def process_pccpmponentes(items):
         f.flush()
         if return_satus:
             time.sleep(settings.delayPerItem)
+
+def process_amazon(items):
+    session_amazon:requests.Session = None
+    if session_amazon is None: session_amazon = requests.Session()
+    for item in items:
+        return_satus = search_in_amazon(item, session_amazon)
+        f.flush()
+        if return_satus:
+            time.sleep(settings.delayPerItem)
     
+def process_game(items):
+    session_game:requests.Session = None
+    if session_game is None: session_game = requests.Session()
+    for item in items:
+        return_satus = search_in_game_store_by_search(item, session_game)
+        f.flush()
+        if return_satus:
+            time.sleep(settings.delayPerItem)
+
+def process_coolmod(items):
+    session_coolmod:requests.Session = None
+    if session_coolmod is None: session_coolmod = requests.Session()
+    for item in items:
+        return_satus = search_in_coolmod(item, session_coolmod)
+        f.flush()
+        if return_satus:
+            time.sleep(settings.delayPerItem)
+
+def process_mediamark(items):
+    session_mediamark:requests.Session = None
+    if session_mediamark is None: session_mediamark = requests.Session()
+    for item in items:
+        return_satus = search_in_mediamark(item, session_mediamark)
+        f.flush()
+        if return_satus:
+            time.sleep(settings.delayPerItem)
+
 def readConfigFile():
 
     with open("settings.json", "r") as read_file :
@@ -616,19 +661,18 @@ def readConfigFile():
         if "timeoutRequest" in filejson: settings.timeoutRequest = filejson['timeoutRequest']
 
         
-        if "storeConfig" in filejson: settings.storeConfig = filejson['storeConfig']
+        if "storeConfig" in filejson: storeConfig_local = filejson['storeConfig']
 
         settings.disablePushForAll = filejson['disablePushForAll']
         settings.itemsToLookFor = filejson['items']
 
-
-        #todo finish to get the list from json
-        asdf = settings.storeConfig['pccomponentes']
         #generate the functions
-        for item22 in dict(settings.storeConfig):
-            asdfasdf = item22['function']
-            item22['function'] = globals()[item22['function']]
-
+        for item in storeConfig_local:
+            function_to_use = storeConfig_local[item]['function']
+            timeout_to_use = storeConfig_local[item]['timeoutRequest']
+            st_config = store_config(item, globals()[function_to_use], timeout_to_use)
+            settings.storeConfig[item] = st_config
+            #no entiendo porque tengo que buscar en vez de coger el iterado iteem22
 
         settings.group_by_store.clear()
 
@@ -666,16 +710,48 @@ def readConfigFile():
 
 def main_v2():
     readConfigFile()
-    global f
-    f = open(settings.filetoLog, "a")
-    #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-    for itemsStore in settings.group_by_store:
-        if itemsStore == 'pccomponentes':
+    lastReadConfigTime = datetime.utcnow()
+    while True:
+        global f
+        f = open(settings.filetoLog, "a")
+        startloopTime = datetime.utcnow() 
+        log(bcolors.OKBLUE, '', '', '' , '', 'Loop Start: ', startloopTime)
+            
+        try:
+            #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+            for itemsStore in settings.group_by_store:
+                function = settings.storeConfig[itemsStore].function
+                function(settings.group_by_store[itemsStore])
+            
+            offset = datetime.utcnow() - lastReadConfigTime
 
-            function = globals()[settings.storeConfig[itemsStore]['function']]
-            function(settings.group_by_store[itemsStore])
-           #process_pccpmponentes (settings.group_by_store[itemsStore])
-    f.close()
+            if offset.total_seconds() > settings.readConfigEachSeconds:
+                f.write(f'\nReading config file again')
+                print(f'Reading config file again')
+                readConfigFile()
+                lastReadConfigTime = datetime.utcnow()
+        except Exception as e:
+            print (f'{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\t {bcolors.RED}Error unknow {bcolors.ENDC}\n{e}')  
+            time.sleep(settings.delayIfException) 
+            continue
+
+        offset = datetime.utcnow() - lastReadConfigTime
+
+        if offset.total_seconds() > settings.readConfigEachSeconds:
+            f.write(f'\nReading config file again')
+            print(f'Reading config file again')
+            readConfigFile()
+            lastReadConfigTime = datetime.utcnow()
+
+        log(bcolors.OKBLUE, '', '', '' , f'takes {(datetime.utcnow() - startloopTime).total_seconds()}', 'Loop Ends: ', datetime.utcnow() )
+        
+        if settings.stopProcess == True:
+            f.write(f'\nProcess stopped')
+            print(f'Process stopped')
+            f.close()
+            break
+
+        f.close()
 
 def main():
     readConfigFile()
