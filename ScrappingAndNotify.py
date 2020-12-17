@@ -8,6 +8,7 @@ from datetime import datetime
 from http import HTTPStatus
 import re
 import unicodedata
+from collections import defaultdict
 import concurrent.futures
 #from circuitbreaker import circuit
 #from circuitbreaker import CircuitBreaker
@@ -44,6 +45,7 @@ class settings:
     showConfigInfo: bool = False
     users_pushKeys = ''
     itemsToLookFor = []
+    group_by_store = defaultdict(list)
     
 class aux:
     lastNotificationSendTime = datetime(2000,1,1,0,0,0,0)
@@ -69,10 +71,6 @@ class item_game:
         if "Name" in json_item: self.name = json_item['Name']
 
         if self.buttonText == 'Comprar': self.hasStock = True
-
-#class item_coolmod:
-#    class Disponivility(Enum):
-
 
 class setting_store_item:
     name: str = ''
@@ -110,7 +108,7 @@ class settings_game_by_search_item(setting_store_item):
     criteria: str = ''
     def __init__(self, json_item):
         setting_store_item.__init__(self, json_item)
-        if "criteria" in item: self.criteria = item['criteria']
+        if "criteria" in json_item: self.criteria = json_item['criteria']
 
 class setting_coolmod_item(setting_store_desired_price_item):
     pass
@@ -591,6 +589,17 @@ def search_in_mediamark(item, session:requests.Session):
             , f'OUT OF STOCK')
         return True
 
+def process_pccpmponentes(items):
+    
+    session_pccomponentes:requests.Session = None
+    if session_pccomponentes is None: session_pccomponentes = requests.Session()
+    for item in items:
+        return_satus = search_in_pccomponentes_store(item, session_pccomponentes)
+        f.flush()
+        if return_satus:
+            time.sleep(settings.delayPerItem)
+    
+
 def readConfigFile():
 
     with open("settings.json", "r") as read_file :
@@ -609,6 +618,11 @@ def readConfigFile():
         settings.disablePushForAll = filejson['disablePushForAll']
         settings.itemsToLookFor = filejson['items']
 
+        settings.group_by_store.clear()
+
+        for item in settings.itemsToLookFor:
+            settings.group_by_store[item['store']].append(item)
+    
         if not settings.disablePushForAll:
             enviroment:str = settings.enviroment
 
@@ -638,6 +652,16 @@ def readConfigFile():
                 + f'\turl_push: {settings.timeoutRequest}'
                 )
 
+def main_v2():
+    readConfigFile()
+    global f
+    f = open(settings.filetoLog, "a")
+    #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    for itemsStore in settings.group_by_store:
+        if itemsStore == 'pccomponentes':
+            process_pccpmponentes (settings.group_by_store[itemsStore])
+    f.close()
+
 def main():
     readConfigFile()
 
@@ -648,11 +672,14 @@ def main():
         session_amazon:requests.Session = None
         session_mediamark:requests.Session = None
 
-        lastReadConfigTime = datetime.utcnow()   
+        lastReadConfigTime = datetime.utcnow()
         #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+
         while True:
             global f
             f = open(settings.filetoLog, "a")
+            startloopTime = datetime.utcnow() 
+            log(bcolors.OKBLUE, '', '', '' , '', 'Loop Start: ', startloopTime)
             try:
                 for item in settings.itemsToLookFor:
                     store = item['store']
@@ -688,6 +715,7 @@ def main():
                 print (f'{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\t {bcolors.RED}Error unknow {bcolors.ENDC}\n{e}')  
                 time.sleep(settings.delayIfException) 
                 continue
+            
 
             offset = datetime.utcnow() - lastReadConfigTime
 
@@ -697,16 +725,19 @@ def main():
                 readConfigFile()
                 lastReadConfigTime = datetime.utcnow()
 
+            log(bcolors.OKBLUE, '', '', '' , f'takes {(datetime.utcnow() - startloopTime).total_seconds()}', 'Loop Ends: ', datetime.utcnow() )
+            
             if settings.stopProcess == True:
                 f.write(f'\nProcess stopped')
                 print(f'Process stopped')
                 f.close()
                 break
+
             f.close()
-        
     else:
         f.write(f'\nreadConfigEachSeconds not configured!!!!')
         print('readConfigEachSeconds not configured!!!!')
 
 if __name__ == '__main__':
-    main()
+    #main()
+    main_v2()
