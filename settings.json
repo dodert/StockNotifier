@@ -1,5 +1,6 @@
 {
     "enviroment": "production",
+    "enableLogInfo": false,
     "writelog": true,
     "delayIfException": 60,
     "delayPerItem": 1,

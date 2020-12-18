@@ -24,11 +24,6 @@ class class_push_send_log:
     first_send:datetime = None
     latest_send:datetime = None
     unique_store_item: str = None
-    #def __init__(self, push_key:str = None, first_send:datetime = None, latest_send:datetime  = None, unique_store_item: str = None):
-    #    self.push_key = push_key
-    #    self.first_send = first_send
-    #    self.latest_send = latest_send
-    #    self.unique_store_item = unique_store_item
     def __init__(self, push_key:str = None, unique_store_item: str = None):
         self.push_key = push_key
         if self.first_send is None:
@@ -59,6 +54,7 @@ class store_config:
 
 class settings:
     enviroment: str
+    enableLogInfo: bool
     url_push: str
     token_push: str
     delayBetweenNotifications: int = 0
@@ -167,13 +163,6 @@ def remove_duplicates_list(x):
 def send_push(message: str, title: str, url_title: str, url: str, destinataries):
     if settings.disablePushForAll: return
 
-    #el timeer debe ser para cada item!!!
-    #offsetPush = (datetime.utcnow() - aux.lastNotificationSendTime).total_seconds()
-    #global push_send_log
-   
-    #tood me falta manejar destinataries, es una "lista" ahoras
-    #destinataries_clean = remove_duplicates_list(destinataries)
-
     for to in destinataries:
         #if not offsetPush > settings.delayBetweenNotifications: return
         #https://pushover.net/api
@@ -181,24 +170,14 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         delayBetween = destinataries[to].delayBetween_seconds
         pushkey = settings.users_pushKeys[to]
 
-
-        
-        #push_send_log.append(pushkey)
-        #push_send_log[pushkey] = datetime.utcnow
         unique_key_push_item:str = f'{pushkey}_{url}'
         item_push_send_log = class_push_send_log(pushkey, unique_key_push_item)
-
-        #item_aux = aux.push_send_log[pushkey]
-        #asdf = len(item_aux)
-        #asdfsdf = len(aux.push_send_log[pushkey])
-        #push_send_log.append(unique_key_push_item) 
+ 
         push_sent_offset:int = 0
         if aux.push_send_log[unique_key_push_item].unique_store_item is not None:
-            #he enviado a esta devices
 
-            #he enviado sobre este prodcuto?
             if aux.push_send_log[unique_key_push_item].unique_store_item == unique_key_push_item:
-                #lo he enviado hace x?
+                
                 if aux.push_send_log[unique_key_push_item].latest_send is None:
                     send_push = True
                 else:
@@ -218,12 +197,11 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         #class_push_send_log.first_send
         #class_push_send_log.latest_send
         #class_push_send_log.unique_store_item
-        print (f'pushkey={pushkey} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
+        if settings.enableLogInfo:
+            print (f'pushkey={pushkey} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
+        
         if send_push == True:
             aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
-
-        #todo remove when test
-        continue
 
         if not send_push : return
         
@@ -240,14 +218,11 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
 
         if x.status_code == HTTPStatus.OK:
             aux.push_send_log[pushkey].latest_send = datetime.utcnow()
-            print (f'\t Push send to {to} ({x.status_code})')    
+            print (f'\t Push send to {to} (next after {round(delayBetween,2)}s)')    
             f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush send to {to} ({x.status_code})')
         else:
             print (f'\t Push Error to {to} ({x.status_code})')    
             f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush Error to {to} ({x.status_code})')
-        
-        """ if x.status_code == HTTPStatus.OK:
-            aux.lastNotificationSendTime = datetime.utcnow() """
 
 #@MyCircuitBreaker()
 def make_web_call(url:str):
@@ -741,6 +716,7 @@ def readConfigFile():
         filejson = json.load(read_file)
 
         if "enviroment" in filejson: settings.enviroment = filejson['enviroment']
+        if "enableLogInfo" in filejson: settings.enableLogInfo = filejson['enableLogInfo']
         if "readConfigEachSeconds" in filejson: settings.readConfigEachSeconds = filejson['readConfigEachSeconds']            
         if "stop" in filejson: settings.stopProcess = filejson['stopProcess']
         if "delayBetweenNotifications" in filejson: settings.delayBetweenNotifications = filejson['delayBetweenNotifications']
