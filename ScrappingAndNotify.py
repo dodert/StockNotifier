@@ -89,7 +89,7 @@ class setting_store_item:
     ignore: bool = False
     sendpush: bool = False
     sendpush_to = ''
-    timeoutRequest:int = 0
+    timeoutRequest:int = 0 #tengo que  usar el the store_config
     store: str = ''
     def __init__(self, json_item):
         if "url" in json_item: self.url = json_item['url']
@@ -123,6 +123,19 @@ class settings_game_by_search_item(setting_store_item):
 
 class setting_coolmod_item(setting_store_desired_price_item):
     pass
+
+class class_pccomponentes():
+
+    def __init__(self, json_item ):
+        pass
+    def process():
+        session_pccomponentes:requests.Session = None
+        if session_pccomponentes is None: session_pccomponentes = requests.Session()
+        for item in items:
+            return_satus = search_in_pccomponentes_store(item, session_pccomponentes)
+            f.flush()
+            if return_satus:
+                time.sleep(settings.delayPerItem)
 
 def log(color:bcolors, col1: str, col2:str, col3: str, col4: str, col5: str, col6: str):
     max_col2: int = 35
@@ -601,6 +614,7 @@ def search_in_mediamark(item, session:requests.Session):
         return True
 
 def process_pccpmponentes(items):
+    #settings.storeConfig[''].timeoutRequest
     session_pccomponentes:requests.Session = None
     if session_pccomponentes is None: session_pccomponentes = requests.Session()
     for item in items:
@@ -720,8 +734,8 @@ def main_v2():
         try:
             #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             for itemsStore in settings.group_by_store:
-                function = settings.storeConfig[itemsStore].function
-                function(settings.group_by_store[itemsStore])
+                store_function = settings.storeConfig[itemsStore].function
+                store_function(settings.group_by_store[itemsStore])
             
             offset = datetime.utcnow() - lastReadConfigTime
 
