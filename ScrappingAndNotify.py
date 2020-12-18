@@ -177,16 +177,16 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         #asdfsdf = len(aux.push_send_log[pushkey])
         #push_send_log.append(unique_key_push_item) 
         push_sent_offset:int = 0
-        if aux.push_send_log[pushkey].unique_store_item is not None:
+        if aux.push_send_log[unique_key_push_item].unique_store_item is not None:
             #he enviado a esta devices
 
             #he enviado sobre este prodcuto?
-            if aux.push_send_log[pushkey].unique_store_item == unique_key_push_item:
+            if aux.push_send_log[unique_key_push_item].unique_store_item == unique_key_push_item:
                 #lo he enviado hace x?
-                if aux.push_send_log[pushkey].latest_send is None:
+                if aux.push_send_log[unique_key_push_item].latest_send is None:
                     send_push = True
                 else:
-                    push_sent_offset = (datetime.utcnow() - aux.push_send_log[pushkey].latest_send).total_seconds() 
+                    push_sent_offset = (datetime.utcnow() - aux.push_send_log[unique_key_push_item].latest_send).total_seconds() 
                     if push_sent_offset <= 50:
                         send_push = False
                     else:
@@ -195,7 +195,7 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
                 send_push = True
 
         else:
-            aux.push_send_log[pushkey] = item_push_send_log
+            aux.push_send_log[unique_key_push_item] = item_push_send_log
             send_push = True
         #class_push_send_log.push_key = pushkey
         #class_push_send_log.first_send
@@ -203,10 +203,10 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         #class_push_send_log.unique_store_item
         print (f'send_push = {send_push} seconds ({push_sent_offset})')
         if send_push == True:
-            aux.push_send_log[pushkey].latest_send = datetime.utcnow()
+            aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
 
         return
-        
+
         if not send_push : return
         
         request_push = {
