@@ -18,7 +18,18 @@ import concurrent.futures
 #    FAILURE_THRESHOLD = 3
 #    RECOVERY_TIMEOUT = 20
 #    EXPECTED_EXCEPTION = requests.exceptions.RequestException
-    
+
+class class_push_send_log:
+    push_key:str
+    first_send:datetime
+    latest_send:datetime
+    unique_store_item: str
+    def __init__(self, push_key:str = None, first_send:datetime = None, latest_send:datetime  = None, unique_store_item: str = None):
+        self.push_key = push_key
+        self.first_send = first_send
+        self.latest_send = latest_send
+        self.unique_store_item = unique_store_item
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -35,7 +46,7 @@ class store_config:
     function = None
     timeoutRequest: int
     eppepe:str
-    def __init__(self, name:str, function, timeoutRequest):
+    def __init__(self, name:str, function , timeoutRequest):
         self.name = name
         self.function = function
         self.timeoutRequest = timeoutRequest
@@ -60,6 +71,8 @@ class settings:
     
 class aux:
     lastNotificationSendTime = datetime(2000,1,1,0,0,0,0)
+    push_send_log = defaultdict(class_push_send_log)
+    #push_send_log: defaultdict(list)
 
 class item_game:
     url: str = ''
@@ -138,11 +151,43 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
 
     #el timeer debe ser para cada item!!!
     #offsetPush = (datetime.utcnow() - aux.lastNotificationSendTime).total_seconds()
+    #global push_send_log
+   
     destinataries_clean = remove_duplicates_list(destinataries)
+
     for to in destinataries_clean:
         #if not offsetPush > settings.delayBetweenNotifications: return
         #https://pushover.net/api
+        #settings.group_by_store[item['store']].append(item)
         pushkey = settings.users_pushKeys[to]
+
+        #push_send_log.append(pushkey)
+        #push_send_log[pushkey] = datetime.utcnow
+        unique_key_push_item:str = f'{pushkey}_{url}'
+        item_push_send_log = class_push_send_log(pushkey, datetime.utcnow(), datetime.utcnow(), unique_key_push_item)
+
+        item_aux = aux.push_send_log[pushkey]
+        #asdf = len(item_aux)
+       # asdfsdf = len(aux.push_send_log[pushkey])
+        #push_send_log.append(unique_key_push_item) 
+        if aux.push_send_log[pushkey].unique_store_item is not None:
+            item_aux = aux.push_send_log[pushkey]
+            #todo finiquitar es logica
+            if item_aux.unique_store_item == unique_key_push_item and (datetime.utcnow() - item_aux.lastNotificationSendTime).total_seconds() > 10:
+                aux.push_send_log[pushkey].lastNotificationSendTime = datetime.utcnow()
+                send_push = True   
+            else:
+                send_push = False
+        else:
+            aux.push_send_log[pushkey] = item_push_send_log
+            send_push = True
+        #class_push_send_log.push_key = pushkey
+        #class_push_send_log.first_send
+        #class_push_send_log.latest_send
+        #class_push_send_log.unique_store_item
+        return          
+        if not send_push : return
+        
         request_push = {
                 'user': pushkey,
                 'message':message,
@@ -831,4 +876,5 @@ def main():
 
 if __name__ == '__main__':
     #main()
+    
     main_v2()
