@@ -47,7 +47,15 @@
             "url": "https://www.coolmod.com/amd-ryzen-9-5900x-48ghz-socket-am4-boxed-procesador-precio",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 100
+                },
+                "benja2":{
+                    "delayBetween": 99
+                }
+            }
+            ,
             "desiredPrice": 599,
             "desiredPriceOffset": 10
         },
@@ -57,7 +65,14 @@
             "url": "https://www.mediamarkt.es/es/product/_tablet-lenovo-tab-m10-32-gb-negro-wifi-10-1-hd-2-gb-ram-snapdragon-429-android-1466029.html",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 66
+                },
+                "benja2":{
+                    "delayBetween": 11
+                }
+            },
             "desiredPrice": 160,
             "desiredPriceOffset": 10
         },
@@ -67,7 +82,14 @@
             "url": "https://www.coolmod.com/amd-ryzen-7-3700x-wraith-prism-44ghz-socket-am4-boxed-procesador-precio",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 12
+                },
+                "benja2":{
+                    "delayBetween": 32
+                }
+            },
             "desiredPrice": 399,
             "desiredPriceOffset": 10
         }

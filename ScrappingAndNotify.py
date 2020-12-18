@@ -102,12 +102,19 @@ class item_game:
 
         if self.buttonText == 'Comprar': self.hasStock = True
 
+class class_sendpush_to:
+    device: str
+    delayBetween_seconds: int
+    def __init__ (self, device: str, delayBetween_seconds: int):
+        self.device = device
+        self.delayBetween_seconds = delayBetween_seconds
+
 class setting_store_item:
     name: str = ''
     url: str = ''
     ignore: bool = False
     sendpush: bool = False
-    sendpush_to = ''
+    sendpush_to = defaultdict (class_sendpush_to)
     timeoutRequest:int = 0
     store: str = ''
     def __init__(self, json_item):
@@ -115,7 +122,12 @@ class setting_store_item:
         if "name" in json_item: self.name = json_item['name']
         if "ignore" in json_item: self.ignore = json_item['ignore']
         if "sendpush" in json_item: self.sendpush = json_item['sendpush']
-        if "sendpush_to" in json_item: self.sendpush_to = json_item['sendpush_to']
+        if "sendpush_to" in json_item: 
+            sendpush_to_local = json_item['sendpush_to']
+            for item in sendpush_to_local:
+                config_sendpush_to = class_sendpush_to(item, sendpush_to_local[item]['delayBetween'])
+                self.sendpush_to[item] = config_sendpush_to
+
         if "store" in json_item: self.store = json_item['store']
         
         self.timeoutRequest = settings.timeoutRequest[self.store]
@@ -159,14 +171,18 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
     #offsetPush = (datetime.utcnow() - aux.lastNotificationSendTime).total_seconds()
     #global push_send_log
    
-    destinataries_clean = remove_duplicates_list(destinataries)
+    #tood me falta manejar destinataries, es una "lista" ahoras
+    #destinataries_clean = remove_duplicates_list(destinataries)
 
-    for to in destinataries_clean:
+    for to in destinataries:
         #if not offsetPush > settings.delayBetweenNotifications: return
         #https://pushover.net/api
         #settings.group_by_store[item['store']].append(item)
+        delayBetween = destinataries[to].delayBetween_seconds
         pushkey = settings.users_pushKeys[to]
 
+
+        
         #push_send_log.append(pushkey)
         #push_send_log[pushkey] = datetime.utcnow
         unique_key_push_item:str = f'{pushkey}_{url}'
@@ -187,7 +203,8 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
                     send_push = True
                 else:
                     push_sent_offset = (datetime.utcnow() - aux.push_send_log[unique_key_push_item].latest_send).total_seconds() 
-                    if push_sent_offset <= 50:
+
+                    if push_sent_offset <= delayBetween:
                         send_push = False
                     else:
                         send_push = True
@@ -201,11 +218,12 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         #class_push_send_log.first_send
         #class_push_send_log.latest_send
         #class_push_send_log.unique_store_item
-        print (f'send_push = {send_push} seconds ({push_sent_offset})')
+        print (f'pushkey={pushkey} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
         if send_push == True:
             aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
 
-        return
+        #todo remove when test
+        continue
 
         if not send_push : return
         
