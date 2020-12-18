@@ -20,14 +20,20 @@ import concurrent.futures
 #    EXPECTED_EXCEPTION = requests.exceptions.RequestException
 
 class class_push_send_log:
-    push_key:str
-    first_send:datetime
-    latest_send:datetime
-    unique_store_item: str
-    def __init__(self, push_key:str = None, first_send:datetime = None, latest_send:datetime  = None, unique_store_item: str = None):
+    push_key:str = None
+    first_send:datetime = None
+    latest_send:datetime = None
+    unique_store_item: str = None
+    #def __init__(self, push_key:str = None, first_send:datetime = None, latest_send:datetime  = None, unique_store_item: str = None):
+    #    self.push_key = push_key
+    #    self.first_send = first_send
+    #    self.latest_send = latest_send
+    #    self.unique_store_item = unique_store_item
+    def __init__(self, push_key:str = None, unique_store_item: str = None):
         self.push_key = push_key
-        self.first_send = first_send
-        self.latest_send = latest_send
+        if self.first_send is None:
+            self.first_send = datetime.utcnow()
+        self.latest_send = None
         self.unique_store_item = unique_store_item
 
 class bcolors:
@@ -164,20 +170,30 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         #push_send_log.append(pushkey)
         #push_send_log[pushkey] = datetime.utcnow
         unique_key_push_item:str = f'{pushkey}_{url}'
-        item_push_send_log = class_push_send_log(pushkey, datetime.utcnow(), datetime.utcnow(), unique_key_push_item)
+        item_push_send_log = class_push_send_log(pushkey, unique_key_push_item)
 
-        item_aux = aux.push_send_log[pushkey]
+        #item_aux = aux.push_send_log[pushkey]
         #asdf = len(item_aux)
-       # asdfsdf = len(aux.push_send_log[pushkey])
+        #asdfsdf = len(aux.push_send_log[pushkey])
         #push_send_log.append(unique_key_push_item) 
+        push_sent_offset:int = 0
         if aux.push_send_log[pushkey].unique_store_item is not None:
-            item_aux = aux.push_send_log[pushkey]
-            #todo finiquitar es logica
-            if item_aux.unique_store_item == unique_key_push_item and (datetime.utcnow() - item_aux.lastNotificationSendTime).total_seconds() > 10:
-                aux.push_send_log[pushkey].lastNotificationSendTime = datetime.utcnow()
-                send_push = True   
+            #he enviado a esta devices
+
+            #he enviado sobre este prodcuto?
+            if aux.push_send_log[pushkey].unique_store_item == unique_key_push_item:
+                #lo he enviado hace x?
+                if aux.push_send_log[pushkey].latest_send is None:
+                    send_push = True
+                else:
+                    push_sent_offset = (datetime.utcnow() - aux.push_send_log[pushkey].latest_send).total_seconds() 
+                    if push_sent_offset <= 50:
+                        send_push = False
+                    else:
+                        send_push = True
             else:
-                send_push = False
+                send_push = True
+
         else:
             aux.push_send_log[pushkey] = item_push_send_log
             send_push = True
@@ -185,7 +201,12 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         #class_push_send_log.first_send
         #class_push_send_log.latest_send
         #class_push_send_log.unique_store_item
-        return          
+        print (f'send_push = {send_push} seconds ({push_sent_offset})')
+        if send_push == True:
+            aux.push_send_log[pushkey].latest_send = datetime.utcnow()
+
+        return
+        
         if not send_push : return
         
         request_push = {
@@ -198,9 +219,15 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
             }
         
         x = requests.post(settings.url_push, data = request_push)
-        print (f'\t Push send to {to} ({x.status_code})')    
-        f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush send to {to} ({x.status_code})')
 
+        if x.status_code == HTTPStatus.OK:
+            aux.push_send_log[pushkey].latest_send = datetime.utcnow()
+            print (f'\t Push send to {to} ({x.status_code})')    
+            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush send to {to} ({x.status_code})')
+        else:
+            print (f'\t Push Error to {to} ({x.status_code})')    
+            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush Error to {to} ({x.status_code})')
+        
         """ if x.status_code == HTTPStatus.OK:
             aux.lastNotificationSendTime = datetime.utcnow() """
 
