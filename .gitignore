@@ -129,3 +129,4 @@ dmypy.json
 .pyre/
 pushover_settings.production.json
 log.txt
+.DS_Store

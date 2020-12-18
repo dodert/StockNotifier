@@ -118,7 +118,8 @@ class setting_store_item:
         if "name" in json_item: self.name = json_item['name']
         if "ignore" in json_item: self.ignore = json_item['ignore']
         if "sendpush" in json_item: self.sendpush = json_item['sendpush']
-        if "sendpush_to" in json_item: 
+        if "sendpush_to" in json_item:
+            self.sendpush_to.clear()
             sendpush_to_local = json_item['sendpush_to']
             for item in sendpush_to_local:
                 config_sendpush_to = class_sendpush_to(item, sendpush_to_local[item]['delayBetween'])
@@ -172,7 +173,7 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
 
         unique_key_push_item:str = f'{pushkey}_{url}'
         item_push_send_log = class_push_send_log(pushkey, unique_key_push_item)
- 
+ #settings.storeConfig.clear()
         push_sent_offset:int = 0
         if aux.push_send_log[unique_key_push_item].unique_store_item is not None:
 
@@ -198,7 +199,7 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
         #class_push_send_log.latest_send
         #class_push_send_log.unique_store_item
         if settings.enableLogInfo:
-            print (f'pushkey={pushkey} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
+            print (f'\t{to} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
         
         if send_push == True:
             aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
@@ -724,14 +725,13 @@ def readConfigFile():
         if "onlySendPushWhenMatchPrice" in filejson: settings.onlySendPushWhenMatchPrice = filejson['onlySendPushWhenMatchPrice']
         if "showConfigInfo" in filejson: settings.showConfigInfo = filejson['showConfigInfo']
         if "delayPerItem" in filejson: settings.delayPerItem = filejson['delayPerItem']
-        if "timeoutRequest" in filejson: settings.timeoutRequest = filejson['timeoutRequest']
-
-        
+        if "timeoutRequest" in filejson: settings.timeoutRequest = filejson['timeoutRequest']        
         if "storeConfig" in filejson: storeConfig_local = filejson['storeConfig']
 
         settings.disablePushForAll = filejson['disablePushForAll']
         settings.itemsToLookFor = filejson['items']
 
+        settings.storeConfig.clear()
         #generate the functions
         for item in storeConfig_local:
             function_to_use = storeConfig_local[item]['function']
@@ -780,8 +780,9 @@ def main_v2():
     while True:
         global f
         f = open(settings.filetoLog, "a")
-        startloopTime = datetime.utcnow() 
-        log(bcolors.OKBLUE, '', '', '' , '', 'Loop Start: ', startloopTime)
+        startloopTime = datetime.utcnow()
+        if settings.enableLogInfo:
+            log(bcolors.OKBLUE, '', '', '' , '', 'Loop Start: ', startloopTime)
             
         try:
             #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -809,7 +810,8 @@ def main_v2():
             readConfigFile()
             lastReadConfigTime = datetime.utcnow()
 
-        log(bcolors.OKBLUE, '', '', '' , f'takes {(datetime.utcnow() - startloopTime).total_seconds()}', 'Loop Ends: ', datetime.utcnow() )
+        if settings.enableLogInfo:
+            log(bcolors.OKBLUE, '', '', '' , f'takes {(datetime.utcnow() - startloopTime).total_seconds()}', 'Loop Ends: ', datetime.utcnow() )
         
         if settings.stopProcess == True:
             f.write(f'\nProcess stopped')
