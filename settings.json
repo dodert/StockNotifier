@@ -1,11 +1,11 @@
 {
     "enviroment": "production",
+    "enableLogInfo": false,
     "writelog": true,
     "delayIfException": 60,
     "delayPerItem": 1,
     "readConfigEachSeconds": 60,
     "stopProcess": false,
-    "delayBetweenNotifications": 300,
     "filetoLog": "log.txt",
     "disablePushForAll": false,
     "onlySendPushWhenMatchPrice": false,
@@ -47,7 +47,14 @@
             "url": "https://www.mediamarkt.es/es/product/_consola-sony-ps5-825-gb-4k-hdr-blanco-1487016.html",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            },
             "desiredPrice": 499,
             "desiredPriceOffset": 10
         },
@@ -57,7 +64,43 @@
             "url": "https://www.mediamarkt.es/es/product/_consola-sony-ps5-digital-edition-825-gb-4k-hdr-blanco-1487015.html",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            },
+            "desiredPrice": 399,
+            "desiredPriceOffset": 10
+        },
+
+        {
+            "name": "Ryzen 9 5900X",
+            "store": "coolmod",
+            "url": "https://www.coolmod.com/amd-ryzen-9-5900x-48ghz-socket-am4-boxed-procesador-precio",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
+            "desiredPrice": 599,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "ryzen 3700",
+            "store": "coolmod",
+            "url": "https://www.coolmod.com/amd-ryzen-7-3700x-wraith-prism-44ghz-socket-am4-boxed-procesador-precio",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 120
+                }
+            },
             "desiredPrice": 399,
             "desiredPriceOffset": 10
         },
@@ -67,28 +110,12 @@
             "url": "https://www.mediamarkt.es/es/product/_tablet-lenovo-tab-m10-32-gb-negro-wifi-10-1-hd-2-gb-ram-snapdragon-429-android-1466029.html",
             "ignore": true,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
             "desiredPrice": 160,
-            "desiredPriceOffset": 10
-        },
-        {
-            "name": "Ryzen 9 5900X",
-            "store": "coolmod",
-            "url": "https://www.coolmod.com/amd-ryzen-9-5900x-48ghz-socket-am4-boxed-procesador-precio",
-            "ignore": false,
-            "sendpush": true,
-            "sendpush_to": ["benja"],
-            "desiredPrice": 599,
-            "desiredPriceOffset": 10
-        },
-        {
-            "name": "asdfasdf",
-            "store": "coolmod",
-            "url": "https://www.coolmod.com/amd-ryzen-7-3700x-wraith-prism-44ghz-socket-am4-boxed-procesador-precio",
-            "ignore": true,
-            "sendpush": true,
-            "sendpush_to": ["benja"],
-            "desiredPrice": 399,
             "desiredPriceOffset": 10
         },
         {
@@ -97,7 +124,14 @@
             "url": "https://www.coolmod.com/sony-playstation-5-edician-digital-consola-precio",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            },
             "desiredPrice": 399,
             "desiredPriceOffset": 10
         },
@@ -107,7 +141,14 @@
             "url": "https://www.coolmod.com/sony-playstation-5-consola-precio",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            },
             "desiredPrice": 499,
             "desiredPriceOffset": 10
         },
@@ -117,7 +158,11 @@
             "url": "https://www.pccomponentes.com/amd-ryzen-9-5900x-37-ghz",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
             "desiredPrice": 599.10,
             "desiredPriceOffset": 20
         },
@@ -127,7 +172,14 @@
             "url": "https://www.pccomponentes.com/amd-ryzen-7-3700x-36ghz-box",
             "ignore": true,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 180
+                },
+                "hector":{
+                    "delayBetween": 1800
+                }
+            },
             "desiredPrice": 320,
             "desiredPriceOffset": 10
         },
@@ -137,7 +189,11 @@
             "url": "https://www.pccomponentes.com/asus-tuf-geforce-rtx-3080-10gb-gddr6x",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
             "desiredPrice": 780.10,
             "desiredPriceOffset": 20
         },
@@ -147,7 +203,11 @@
             "url": "https://www.pccomponentes.com/gigabyte-b365m-ds3h",
             "ignore": true,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
             "desiredPrice": 599.10,
             "desiredPriceOffset": 20
         },
@@ -157,7 +217,11 @@
             "url": "https://www.pccomponentes.com/samsung-980-pro-ssd-1tb-pcie-nvme-m2",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
             "desiredPrice": 250,
             "desiredPriceOffset": 10
         },
@@ -169,7 +233,14 @@
             "criteria": { "MinPrice": null, "MaxPrice": null, "Head": "consola-playstation-5", "SKU": "", "Order": 7, "CategoryFilter": [], "Category": null, "TotalPages": null, "FirstSearch": true, "Page": 0 },
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"]
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            }
         },
         {
             "store": "game",
@@ -179,7 +250,11 @@
             "criteria": { "MinPrice": null, "MaxPrice": null, "Head": "persona-5-strikers-limited-edition", "SKU": "", "Order": 7, "CategoryFilter": [], "Category": null, "TotalPages": null, "FirstSearch": true, "Page": 0 },
             "ignore": true,
             "sendpush": true,
-            "sendpush_to": ["benja"]
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            }
         },
         {
             "store": "amazon",
@@ -187,7 +262,14 @@
             "url": "https://www.amazon.es/dp/B08KKJ37F7",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            },
             "desiredPrice": 250,
             "desiredPriceOffset": 10
         },
@@ -197,7 +279,11 @@
             "url": "https://www.amazon.es/dp/B074G23S52",
             "ignore": true,
             "sendpush": true,
-            "sendpush_to": ["benja"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
             "desiredPrice": 250,
             "desiredPriceOffset": 10
         },
@@ -207,7 +293,14 @@
             "url": "https://www.pccomponentes.com/sony-playstation-5",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            },
             "desiredPrice": 499,
             "desiredPriceOffset": 10
         },
@@ -217,7 +310,14 @@
             "url": "https://www.pccomponentes.com/sony-playstation-5-edicion-digital",
             "ignore": false,
             "sendpush": true,
-            "sendpush_to": ["benja", "hector"],
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
+                }
+            },
             "desiredPrice": 399,
             "desiredPriceOffset": 10
         }

@@ -18,7 +18,19 @@ import concurrent.futures
 #    FAILURE_THRESHOLD = 3
 #    RECOVERY_TIMEOUT = 20
 #    EXPECTED_EXCEPTION = requests.exceptions.RequestException
-    
+
+class class_push_send_log:
+    push_key:str = None
+    first_send:datetime = None
+    latest_send:datetime = None
+    unique_store_item: str = None
+    def __init__(self, push_key:str = None, unique_store_item: str = None):
+        self.push_key = push_key
+        if self.first_send is None:
+            self.first_send = datetime.utcnow()
+        self.latest_send = None
+        self.unique_store_item = unique_store_item
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -35,16 +47,16 @@ class store_config:
     function = None
     timeoutRequest: int
     eppepe:str
-    def __init__(self, name:str, function, timeoutRequest):
+    def __init__(self, name:str, function , timeoutRequest):
         self.name = name
         self.function = function
         self.timeoutRequest = timeoutRequest
 
 class settings:
     enviroment: str
+    enableLogInfo: bool
     url_push: str
     token_push: str
-    delayBetweenNotifications: int = 0
     readConfigEachSeconds:int = 0
     stopProcess: bool = False
     delayIfException: int = 0
@@ -60,6 +72,8 @@ class settings:
     
 class aux:
     lastNotificationSendTime = datetime(2000,1,1,0,0,0,0)
+    push_send_log = defaultdict(class_push_send_log)
+    #push_send_log: defaultdict(list)
 
 class item_game:
     url: str = ''
@@ -83,12 +97,19 @@ class item_game:
 
         if self.buttonText == 'Comprar': self.hasStock = True
 
+class class_sendpush_to:
+    device: str
+    delayBetween_seconds: int
+    def __init__ (self, device: str, delayBetween_seconds: int):
+        self.device = device
+        self.delayBetween_seconds = delayBetween_seconds
+
 class setting_store_item:
     name: str = ''
     url: str = ''
     ignore: bool = False
     sendpush: bool = False
-    sendpush_to = ''
+    sendpush_to = defaultdict (class_sendpush_to)
     timeoutRequest:int = 0
     store: str = ''
     def __init__(self, json_item):
@@ -96,7 +117,13 @@ class setting_store_item:
         if "name" in json_item: self.name = json_item['name']
         if "ignore" in json_item: self.ignore = json_item['ignore']
         if "sendpush" in json_item: self.sendpush = json_item['sendpush']
-        if "sendpush_to" in json_item: self.sendpush_to = json_item['sendpush_to']
+        if "sendpush_to" in json_item:
+            self.sendpush_to.clear()
+            sendpush_to_local = json_item['sendpush_to']
+            for item in sendpush_to_local:
+                config_sendpush_to = class_sendpush_to(item, sendpush_to_local[item]['delayBetween'])
+                self.sendpush_to[item] = config_sendpush_to
+
         if "store" in json_item: self.store = json_item['store']
         
         self.timeoutRequest = settings.timeoutRequest[self.store]
@@ -136,13 +163,47 @@ def remove_duplicates_list(x):
 def send_push(message: str, title: str, url_title: str, url: str, destinataries):
     if settings.disablePushForAll: return
 
-    #el timeer debe ser para cada item!!!
-    #offsetPush = (datetime.utcnow() - aux.lastNotificationSendTime).total_seconds()
-    destinataries_clean = remove_duplicates_list(destinataries)
-    for to in destinataries_clean:
-        #if not offsetPush > settings.delayBetweenNotifications: return
+    for to in destinataries:
         #https://pushover.net/api
+        #settings.group_by_store[item['store']].append(item)
+        delayBetween = destinataries[to].delayBetween_seconds
         pushkey = settings.users_pushKeys[to]
+
+        unique_key_push_item:str = f'{pushkey}_{url}'
+        item_push_send_log = class_push_send_log(pushkey, unique_key_push_item)
+
+        push_sent_offset:int = 0
+        if aux.push_send_log[unique_key_push_item].unique_store_item is not None:
+
+            if aux.push_send_log[unique_key_push_item].unique_store_item == unique_key_push_item:
+                
+                if aux.push_send_log[unique_key_push_item].latest_send is None:
+                    send_push = True
+                else:
+                    push_sent_offset = (datetime.utcnow() - aux.push_send_log[unique_key_push_item].latest_send).total_seconds() 
+
+                    if push_sent_offset <= delayBetween:
+                        send_push = False
+                    else:
+                        send_push = True
+            else:
+                send_push = True
+
+        else:
+            aux.push_send_log[unique_key_push_item] = item_push_send_log
+            send_push = True
+        #class_push_send_log.push_key = pushkey
+        #class_push_send_log.first_send
+        #class_push_send_log.latest_send
+        #class_push_send_log.unique_store_item
+        if settings.enableLogInfo:
+            print (f'\t{to} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
+        
+        if send_push == True:
+            aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
+
+        if not send_push : return
+        #continue
         request_push = {
                 'user': pushkey,
                 'message':message,
@@ -153,11 +214,14 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
             }
         
         x = requests.post(settings.url_push, data = request_push)
-        print (f'\t Push send to {to} ({x.status_code})')    
-        f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush send to {to} ({x.status_code})')
 
-        """ if x.status_code == HTTPStatus.OK:
-            aux.lastNotificationSendTime = datetime.utcnow() """
+        if x.status_code == HTTPStatus.OK:
+            aux.push_send_log[pushkey].latest_send = datetime.utcnow()
+            print (f'\t Push send to {to} (next after {round(delayBetween,2)}s)')    
+            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush send to {to} ({x.status_code})')
+        else:
+            print (f'\t Push Error to {to} ({x.status_code})')    
+            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush Error to {to} ({x.status_code})')
 
 #@MyCircuitBreaker()
 def make_web_call(url:str):
@@ -651,21 +715,20 @@ def readConfigFile():
         filejson = json.load(read_file)
 
         if "enviroment" in filejson: settings.enviroment = filejson['enviroment']
+        if "enableLogInfo" in filejson: settings.enableLogInfo = filejson['enableLogInfo']
         if "readConfigEachSeconds" in filejson: settings.readConfigEachSeconds = filejson['readConfigEachSeconds']            
         if "stop" in filejson: settings.stopProcess = filejson['stopProcess']
-        if "delayBetweenNotifications" in filejson: settings.delayBetweenNotifications = filejson['delayBetweenNotifications']
         if "delayIfException" in filejson: settings.delayIfException = filejson['delayIfException']
         if "onlySendPushWhenMatchPrice" in filejson: settings.onlySendPushWhenMatchPrice = filejson['onlySendPushWhenMatchPrice']
         if "showConfigInfo" in filejson: settings.showConfigInfo = filejson['showConfigInfo']
         if "delayPerItem" in filejson: settings.delayPerItem = filejson['delayPerItem']
-        if "timeoutRequest" in filejson: settings.timeoutRequest = filejson['timeoutRequest']
-
-        
+        if "timeoutRequest" in filejson: settings.timeoutRequest = filejson['timeoutRequest']        
         if "storeConfig" in filejson: storeConfig_local = filejson['storeConfig']
 
         settings.disablePushForAll = filejson['disablePushForAll']
         settings.itemsToLookFor = filejson['items']
 
+        settings.storeConfig.clear()
         #generate the functions
         for item in storeConfig_local:
             function_to_use = storeConfig_local[item]['function']
@@ -698,7 +761,6 @@ def readConfigFile():
         if settings.showConfigInfo:
             print(f'\treadConfigEachSeconds: {settings.readConfigEachSeconds}\n' \
                 + f'\ttopProcess: {settings.stopProcess}\n' \
-                + f'\tdelayBetweenNotifications: {settings.delayBetweenNotifications}\n' \
                 + f'\tdelayIfException: {settings.delayIfException}\n' \
                 + f'\tdelayPerItem: {settings.delayPerItem}\n' \
                 + f'\tonlySendPushWhenMatchPrice: {settings.onlySendPushWhenMatchPrice}\n' \
@@ -714,8 +776,9 @@ def main_v2():
     while True:
         global f
         f = open(settings.filetoLog, "a")
-        startloopTime = datetime.utcnow() 
-        log(bcolors.OKBLUE, '', '', '' , '', 'Loop Start: ', startloopTime)
+        startloopTime = datetime.utcnow()
+        if settings.enableLogInfo:
+            log(bcolors.OKBLUE, '', '', '' , '', 'Loop Start: ', startloopTime)
             
         try:
             #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
@@ -743,7 +806,8 @@ def main_v2():
             readConfigFile()
             lastReadConfigTime = datetime.utcnow()
 
-        log(bcolors.OKBLUE, '', '', '' , f'takes {(datetime.utcnow() - startloopTime).total_seconds()}', 'Loop Ends: ', datetime.utcnow() )
+        if settings.enableLogInfo:
+            log(bcolors.OKBLUE, '', '', '' , f'takes {(datetime.utcnow() - startloopTime).total_seconds()}', 'Loop Ends: ', datetime.utcnow() )
         
         if settings.stopProcess == True:
             f.write(f'\nProcess stopped')
@@ -831,4 +895,5 @@ def main():
 
 if __name__ == '__main__':
     #main()
+    
     main_v2()
