@@ -57,7 +57,6 @@ class settings:
     enableLogInfo: bool
     url_push: str
     token_push: str
-    delayBetweenNotifications: int = 0
     readConfigEachSeconds:int = 0
     stopProcess: bool = False
     delayIfException: int = 0
@@ -165,7 +164,6 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
     if settings.disablePushForAll: return
 
     for to in destinataries:
-        #if not offsetPush > settings.delayBetweenNotifications: return
         #https://pushover.net/api
         #settings.group_by_store[item['store']].append(item)
         delayBetween = destinataries[to].delayBetween_seconds
@@ -173,7 +171,7 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
 
         unique_key_push_item:str = f'{pushkey}_{url}'
         item_push_send_log = class_push_send_log(pushkey, unique_key_push_item)
- #settings.storeConfig.clear()
+
         push_sent_offset:int = 0
         if aux.push_send_log[unique_key_push_item].unique_store_item is not None:
 
@@ -205,7 +203,7 @@ def send_push(message: str, title: str, url_title: str, url: str, destinataries)
             aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
 
         if not send_push : return
-        
+        #continue
         request_push = {
                 'user': pushkey,
                 'message':message,
@@ -720,7 +718,6 @@ def readConfigFile():
         if "enableLogInfo" in filejson: settings.enableLogInfo = filejson['enableLogInfo']
         if "readConfigEachSeconds" in filejson: settings.readConfigEachSeconds = filejson['readConfigEachSeconds']            
         if "stop" in filejson: settings.stopProcess = filejson['stopProcess']
-        if "delayBetweenNotifications" in filejson: settings.delayBetweenNotifications = filejson['delayBetweenNotifications']
         if "delayIfException" in filejson: settings.delayIfException = filejson['delayIfException']
         if "onlySendPushWhenMatchPrice" in filejson: settings.onlySendPushWhenMatchPrice = filejson['onlySendPushWhenMatchPrice']
         if "showConfigInfo" in filejson: settings.showConfigInfo = filejson['showConfigInfo']
@@ -764,7 +761,6 @@ def readConfigFile():
         if settings.showConfigInfo:
             print(f'\treadConfigEachSeconds: {settings.readConfigEachSeconds}\n' \
                 + f'\ttopProcess: {settings.stopProcess}\n' \
-                + f'\tdelayBetweenNotifications: {settings.delayBetweenNotifications}\n' \
                 + f'\tdelayIfException: {settings.delayIfException}\n' \
                 + f'\tdelayPerItem: {settings.delayPerItem}\n' \
                 + f'\tonlySendPushWhenMatchPrice: {settings.onlySendPushWhenMatchPrice}\n' \

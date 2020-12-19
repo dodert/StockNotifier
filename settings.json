@@ -6,7 +6,6 @@
     "delayPerItem": 1,
     "readConfigEachSeconds": 60,
     "stopProcess": false,
-    "delayBetweenNotifications": 300,
     "filetoLog": "log.txt",
     "disablePushForAll": false,
     "onlySendPushWhenMatchPrice": false,
