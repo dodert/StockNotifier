@@ -97,6 +97,35 @@ class item_game:
 
         if self.buttonText == 'Comprar': self.hasStock = True
 
+class item_pccomponentes:
+    # todo end this entire class, since is not done
+    url: str = ''
+    isNew: bool = False
+    buttonText: str = ''
+    buyType: int = 0
+    basketCode: str = ''
+    sellPrice: float = 0
+    name: str = ''
+    isReserve: bool = False
+    hasStock: bool = False
+    __base_url: str = 'https://www.game.es/'
+    def __init__(self, json_item ):
+
+        lookStock = product_json['offers']['offers']['availability']
+        if lookStock == 'http://schema.org/OutOfStock':
+            sefl.hasStock = False
+        elif lookStock == 'http://schema.org/OutOfStock':
+
+        if "Navigation" in json_item: self.url = f"{self.__base_url}{json_item['Navigation']}"
+        if "IsNew" in json_item['Offers'][0]: self.isNew = json_item['Offers'][0]['IsNew']
+        if "ButtonText" in json_item['Offers'][0]: self.buttonText = json_item['Offers'][0]['ButtonText']
+        if "BasketCode" in json_item['Offers'][0]: self.basketCode = json_item['Offers'][0]['BasketCode']
+        if "SellPrice" in json_item['Offers'][0]: self.sellPrice = json_item['Offers'][0]['SellPrice']
+        if "IsReserve" in json_item['Offers'][0]: self.isReserve = json_item['Offers'][0]['IsReserve']
+        if "Name" in json_item: self.name = json_item['Name']
+
+        if self.buttonText == 'Comprar': self.hasStock = True
+
 class class_sendpush_to:
     device: str
     delayBetween_seconds: int
@@ -260,7 +289,9 @@ def search_in_pccomponentes_store_v2(item, session:requests.Session):
 
     product_json = json.loads(soap_product_script.string.strip())
 
-    lookStock = product_json['offers']['offers']['availability']
+    result_item = item_pccomponentes(product_json)
+    
+        
 
     #lookPrice = soup.find(id='priceBlock')
 
