@@ -19,97 +19,84 @@ import concurrent.futures
 #    RECOVERY_TIMEOUT = 20
 #    EXPECTED_EXCEPTION = requests.exceptions.RequestException
 
-class class_push_send_log:
-    push_key:str = None
-    first_send:datetime = None
-    latest_send:datetime = None
-    unique_store_item: str = None
-    def __init__(self, push_key:str = None, unique_store_item: str = None):
-        self.push_key = push_key
-        if self.first_send is None:
-            self.first_send = datetime.utcnow()
-        self.latest_send = None
-        self.unique_store_item = unique_store_item
+from misc.class_bcolors import *
+from class_store_config import *
+#from Class_push_send_log import *
+from notifications.push.Push_notifications import *
+from class_settings import *
+from class_aux import *
 
-class bcolors:
-    HEADER = '\033[95m'
-    OKBLUE = '\033[94m'
-    OKCYAN = '\033[96m'
-    OKGREEN = '\033[92m'
-    WARNING = '\033[93m'
-    RED = '\033[91m'
-    ENDC = '\033[0m'
-    BOLD = '\033[1m'
-    UNDERLINE = '\033[4m'
+from stores.game_store import *    
 
-class store_config:
-    name:str
-    function = None
-    timeoutRequest: int
-    eppepe:str
-    def __init__(self, name:str, function , timeoutRequest):
-        self.name = name
-        self.function = function
-        self.timeoutRequest = timeoutRequest
+def send_push(message: str, title: str, url_title: str, url: str, destinataries):
+    if settings.disablePushForAll: return
 
-class settings:
-    enviroment: str
-    enableLogInfo: bool
-    url_push: str
-    token_push: str
-    readConfigEachSeconds:int = 0
-    stopProcess: bool = False
-    delayIfException: int = 0
-    delayPerItem: int = 0
-    filetoLog = "log.txt"    
-    disablePushForAll: bool = False
-    onlySendPushWhenMatchPrice: bool = False
-    showConfigInfo: bool = False
-    users_pushKeys = ''
-    itemsToLookFor = []
-    group_by_store = defaultdict(list)
-    storeConfig = defaultdict(list)
-    
-class aux:
-    lastNotificationSendTime = datetime(2000,1,1,0,0,0,0)
-    push_send_log = defaultdict(class_push_send_log)
-    #push_send_log: defaultdict(list)
+    for to in destinataries:
+        #https://pushover.net/api
+        #settings.group_by_store[item['store']].append(item)
+        delayBetween = destinataries[to].delayBetween_seconds
+        pushkey = settings.users_pushKeys[to]
 
-class item_game:
-    url: str = ''
-    isNew: bool = False
-    buttonText: str = ''
-    buyType: int = 0
-    basketCode: str = ''
-    sellPrice: float = 0
-    name: str = ''
-    isReserve: bool = False
-    hasStock: bool = False
-    __base_url: str = 'https://www.game.es/'
-    def __init__(self, json_item ):
-        if "Navigation" in json_item: self.url = f"{self.__base_url}{json_item['Navigation']}"
-        if "IsNew" in json_item['Offers'][0]: self.isNew = json_item['Offers'][0]['IsNew']
-        if "ButtonText" in json_item['Offers'][0]: self.buttonText = json_item['Offers'][0]['ButtonText']
-        if "BasketCode" in json_item['Offers'][0]: self.basketCode = json_item['Offers'][0]['BasketCode']
-        if "SellPrice" in json_item['Offers'][0]: self.sellPrice = json_item['Offers'][0]['SellPrice']
-        if "IsReserve" in json_item['Offers'][0]: self.isReserve = json_item['Offers'][0]['IsReserve']
-        if "Name" in json_item: self.name = json_item['Name']
+        unique_key_push_item:str = f'{pushkey}_{url}'
+        item_push_send_log = Class_push_send_log(pushkey, unique_key_push_item)
 
-        if self.buttonText == 'Comprar': self.hasStock = True
+        push_sent_offset:int = 0
+        if aux.push_send_log[unique_key_push_item].unique_store_item is not None:
 
-class class_sendpush_to:
-    device: str
-    delayBetween_seconds: int
-    def __init__ (self, device: str, delayBetween_seconds: int):
-        self.device = device
-        self.delayBetween_seconds = delayBetween_seconds
+            if aux.push_send_log[unique_key_push_item].unique_store_item == unique_key_push_item:
+                
+                if aux.push_send_log[unique_key_push_item].latest_send is None:
+                    send_push = True
+                else:
+                    push_sent_offset = (datetime.utcnow() - aux.push_send_log[unique_key_push_item].latest_send).total_seconds() 
+
+                    if push_sent_offset <= delayBetween:
+                        send_push = False
+                    else:
+                        send_push = True
+            else:
+                send_push = True
+
+        else:
+            aux.push_send_log[unique_key_push_item] = item_push_send_log
+            send_push = True
+        #Class_push_send_log.push_key = pushkey
+        #Class_push_send_log.first_send
+        #Class_push_send_log.latest_send
+        #Class_push_send_log.unique_store_item
+        if settings.enableLogInfo:
+            print (f'\t{to} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
+        
+        if send_push == True:
+            aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
+
+        if not send_push : return
+        #continue
+        request_push = {
+                'user': pushkey,
+                'message':message,
+                'token': settings.token_push,
+                'title': title,
+                'url_title': url_title,
+                'url':url
+            }
+        
+        x = requests.post(settings.url_push, data = request_push)
+
+        if x.status_code == HTTPStatus.OK:
+            aux.push_send_log[pushkey].latest_send = datetime.utcnow()
+            print (f'\t Push send to {to} (next after {round(delayBetween,2)}s)')    
+            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush send to {to} ({x.status_code})')
+        else:
+            print (f'\t Push Error to {to} ({x.status_code})')    
+            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush Error to {to} ({x.status_code})')
 
 class setting_store_item:
     name: str = ''
     url: str = ''
     ignore: bool = False
     sendpush: bool = False
-    sendpush_to = defaultdict (class_sendpush_to)
+    sendpush_to = defaultdict (Class_sendpush_to)
     timeoutRequest:int = 0
     store: str = ''
     def __init__(self, json_item):
@@ -121,7 +108,7 @@ class setting_store_item:
             self.sendpush_to.clear()
             sendpush_to_local = json_item['sendpush_to']
             for item in sendpush_to_local:
-                config_sendpush_to = class_sendpush_to(item, sendpush_to_local[item]['delayBetween'])
+                config_sendpush_to = Class_sendpush_to(item, sendpush_to_local[item]['delayBetween'])
                 self.sendpush_to[item] = config_sendpush_to
 
         if "store" in json_item: self.store = json_item['store']
@@ -159,69 +146,6 @@ def log(color:bcolors, col1: str, col2:str, col3: str, col4: str, col5: str, col
 
 def remove_duplicates_list(x):
   return list(dict.fromkeys(x))
-
-def send_push(message: str, title: str, url_title: str, url: str, destinataries):
-    if settings.disablePushForAll: return
-
-    for to in destinataries:
-        #https://pushover.net/api
-        #settings.group_by_store[item['store']].append(item)
-        delayBetween = destinataries[to].delayBetween_seconds
-        pushkey = settings.users_pushKeys[to]
-
-        unique_key_push_item:str = f'{pushkey}_{url}'
-        item_push_send_log = class_push_send_log(pushkey, unique_key_push_item)
-
-        push_sent_offset:int = 0
-        if aux.push_send_log[unique_key_push_item].unique_store_item is not None:
-
-            if aux.push_send_log[unique_key_push_item].unique_store_item == unique_key_push_item:
-                
-                if aux.push_send_log[unique_key_push_item].latest_send is None:
-                    send_push = True
-                else:
-                    push_sent_offset = (datetime.utcnow() - aux.push_send_log[unique_key_push_item].latest_send).total_seconds() 
-
-                    if push_sent_offset <= delayBetween:
-                        send_push = False
-                    else:
-                        send_push = True
-            else:
-                send_push = True
-
-        else:
-            aux.push_send_log[unique_key_push_item] = item_push_send_log
-            send_push = True
-        #class_push_send_log.push_key = pushkey
-        #class_push_send_log.first_send
-        #class_push_send_log.latest_send
-        #class_push_send_log.unique_store_item
-        if settings.enableLogInfo:
-            print (f'\t{to} send_push = {send_push} seconds ({push_sent_offset}) delay={delayBetween}')
-        
-        if send_push == True:
-            aux.push_send_log[unique_key_push_item].latest_send = datetime.utcnow()
-
-        if not send_push : return
-        #continue
-        request_push = {
-                'user': pushkey,
-                'message':message,
-                'token': settings.token_push,
-                'title': title,
-                'url_title': url_title,
-                'url':url
-            }
-        
-        x = requests.post(settings.url_push, data = request_push)
-
-        if x.status_code == HTTPStatus.OK:
-            aux.push_send_log[pushkey].latest_send = datetime.utcnow()
-            print (f'\t Push send to {to} (next after {round(delayBetween,2)}s)')    
-            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush send to {to} ({x.status_code})')
-        else:
-            print (f'\t Push Error to {to} ({x.status_code})')    
-            f.write(f'\n\t{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\tPush Error to {to} ({x.status_code})')
 
 #@MyCircuitBreaker()
 def make_web_call(url:str):
@@ -264,9 +188,9 @@ def search_in_pccomponentes_store_v2(item, session:requests.Session):
 
     #lookPrice = soup.find(id='priceBlock')
 
-def search_in_pccomponentes_store(item, session:requests.Session):
+def search_in_pccomponentes_store(x, session:requests.Session):
 
-    x = setting_pccomponentes_item(item)
+    #x = setting_pccomponentes_item(item)
 
     if x.ignore == True: return False
 
@@ -419,6 +343,8 @@ def search_in_amazon(item, session:requests.Session):
 
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+
     }
     
     #page = make_web_call(x.url) # 
@@ -435,7 +361,7 @@ def search_in_amazon(item, session:requests.Session):
 
         return False
     
-    soup = BeautifulSoup(page.content, 'html.parser')
+    #soup = BeautifulSoup(page.content, 'html.parser')
     #soup = BeautifulSoup(page.content, 'lxml')
     #with open("output1.html", "w") as file:
     #    file.write(str(soup))
@@ -668,7 +594,18 @@ def process_pccpmponentes(items):
     session_pccomponentes:requests.Session = None
     if session_pccomponentes is None: session_pccomponentes = requests.Session()
     for item in items:
-        return_satus = search_in_pccomponentes_store(item, session_pccomponentes)
+        x = setting_pccomponentes_item(item)
+        try:
+            return_satus = search_in_pccomponentes_store(x, session_pccomponentes)
+        except Exception as e:
+            log(bcolors.RED
+                , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
+                , f'{x.name}'
+                , ''
+                , f'({x.desiredPrice}€)'
+                , '(pcomponentes.es)'
+                , f'ERROR')
+                
         f.flush()
         if return_satus:
             time.sleep(settings.delayPerItem)
@@ -784,7 +721,8 @@ def main_v2():
             #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             for itemsStore in settings.group_by_store:
                 function = settings.storeConfig[itemsStore].function
-                function(settings.group_by_store[itemsStore])
+                item = settings.group_by_store[itemsStore]
+                function(item)
             
             offset = datetime.utcnow() - lastReadConfigTime
 
@@ -794,8 +732,8 @@ def main_v2():
                 readConfigFile()
                 lastReadConfigTime = datetime.utcnow()
         except Exception as e:
-            print (f'{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\t {bcolors.RED}Error unknow {bcolors.ENDC}\n{e}')  
-            time.sleep(settings.delayIfException) 
+            #print (f'{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\t {bcolors.RED}Error unknow{bcolors.ENDC}\n{e}')  
+            log(bcolors.RED,datetime.utcnow().strftime("%d-%m-%y %H:%M:%S"),'','','','', 'Error Unknow')
             continue
 
         offset = datetime.utcnow() - lastReadConfigTime
