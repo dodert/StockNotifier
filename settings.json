@@ -260,7 +260,7 @@
             "store": "amazon",
             "name": "Playstation 5 Consola",
             "url": "https://www.amazon.es/dp/B08KKJ37F7",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
