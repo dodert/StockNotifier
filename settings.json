@@ -2,9 +2,9 @@
     "enviroment": "production",
     "enableLogInfo": false,
     "writelog": true,
-    "delayIfException": 60,
-    "delayPerItem": 2,
-    "readConfigEachSeconds": 60,
+    "delayIfException": 3,
+    "delayPerItem": 3,
+    "readConfigEachSeconds": 300,
     "stopProcess": false,
     "filetoLog": "log.txt",
     "disablePushForAll": false,
@@ -66,11 +66,14 @@
             "store": "fnac",
             "url": "https://www.fnac.es/Consola-PlayStation-5-Videoconsola-Consola/a7724798",
             "urlStock": "https://www.fnac.es/Nav/API/FnacOfferTab/7724798/1",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
                     "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
                 }
             },
             "desiredPrice": 499,
@@ -81,11 +84,14 @@
             "store": "fnac",
             "url": "https://www.fnac.es/Consola-PlayStation-5-Edicion-Digital-Videoconsola-Consola/a7724836",
             "urlStock": "https://www.fnac.es/Nav/API/FnacOfferTab/7724836/1",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
                     "delayBetween": 1800
+                },
+                "hector":{
+                    "delayBetween": 60
                 }
             },
             "desiredPrice": 399,
@@ -125,7 +131,7 @@
             "name": "Consola Playstation 5",
             "store": "mediamark",
             "url": "https://www.mediamarkt.es/es/product/_consola-sony-ps5-825-gb-4k-hdr-blanco-1487016.html",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -142,7 +148,7 @@
             "name": "Consola Playstation 5 Digital",
             "store": "mediamark",
             "url": "https://www.mediamarkt.es/es/product/_consola-sony-ps5-digital-edition-825-gb-4k-hdr-blanco-1487015.html",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -160,7 +166,7 @@
             "name": "Ryzen 9 5900X",
             "store": "coolmod",
             "url": "https://www.coolmod.com/amd-ryzen-9-5900x-48ghz-socket-am4-boxed-procesador-precio",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -202,7 +208,7 @@
             "name": "PlayStation 5 Digital",
             "store": "coolmod",
             "url": "https://www.coolmod.com/sony-playstation-5-edician-digital-consola-precio",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -219,7 +225,7 @@
             "name": "PlayStation 5",
             "store": "coolmod",
             "url": "https://www.coolmod.com/sony-playstation-5-consola-precio",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -236,11 +242,11 @@
             "name": "Ryzen 9 5900X",
             "store": "pccomponentes",
             "url": "https://www.pccomponentes.com/amd-ryzen-9-5900x-37-ghz",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
-                    "delayBetween": 1800
+                    "delayBetween": 43200
                 }
             },
             "desiredPrice": 599.10,
@@ -267,7 +273,7 @@
             "name": "Asus tuf 3080",
             "store": "pccomponentes",
             "url": "https://www.pccomponentes.com/asus-tuf-geforce-rtx-3080-10gb-gddr6x",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -295,7 +301,7 @@
             "name": "SSD Samsung 980 Pro 1TB",
             "store": "pccomponentes",
             "url": "https://www.pccomponentes.com/samsung-980-pro-ssd-1tb-pcie-nvme-m2",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -329,6 +335,34 @@
             "url": "https://www.game.es/api/search",
             "criteria": { "MinPrice": null, "MaxPrice": null, "Head": "persona-5-strikers-limited-edition", "SKU": "", "Order": 7, "CategoryFilter": [], "Category": null, "TotalPages": null, "FirstSearch": true, "Page": 0 },
             "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            }
+        },
+		{
+            "store": "game",
+            "name": "Graficas 3080",
+            "type": "Search",
+            "url": "https://www.game.es/api/search",
+            "criteria": {"MinPrice":null,"MaxPrice":null,"Head":"rtx-3080","SKU":"","Order":7,"CategoryFilter":[{"id":"0000000802","type":"1","source":"GIDS","title":"Departamento","name":"PC Hardware"},{"id":"0000000148","type":"3","source":"GIDS","title":"Clase","name":"Tarjeta Grafica"}],"Category":null,"TotalPages":null,"FirstSearch":true,"Page":0},
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            }
+        },
+        {
+            "store": "game",
+            "name": "Graficas 3060",
+            "type": "Search",
+            "url": "https://www.game.es/api/search",
+            "criteria": {"MinPrice":null,"MaxPrice":null,"Head":"rtx-3060","SKU":"","Order":7,"CategoryFilter":[{"id":"0000000802","type":"1","source":"GIDS","title":"Departamento","name":"PC Hardware"},{"id":"0000000148","type":"3","source":"GIDS","title":"Clase","name":"Tarjeta Grafica"}],"Category":null,"TotalPages":null,"FirstSearch":true,"Page":0},
+            "ignore": false,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -371,7 +405,7 @@
             "name": "Consola Playstation 5",
             "store": "pccomponentes",
             "url": "https://www.pccomponentes.com/sony-playstation-5",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -388,7 +422,7 @@
             "name": "Consola Playstation 5 Digital",
             "store": "pccomponentes",
             "url": "https://www.pccomponentes.com/sony-playstation-5-edicion-digital",
-            "ignore": false,
+            "ignore": true,
             "sendpush": true,
             "sendpush_to": {
                 "benja":{
@@ -400,6 +434,74 @@
             },
             "desiredPrice": 399,
             "desiredPriceOffset": 10
+        },
+        {
+            "name": "MSI GeForce RTX 3060 GAMING X TRIO",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/msi-geforce-rtx-3060-gaming-x-trio-12gb-gddr6-reacondicionado",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "joseramon":{
+                    "delayBetween": 600
+                }
+            },
+            "desiredPrice": 780.10,
+            "desiredPriceOffset": 20
+        },
+        {
+            "name": "Gigabyte GeForce RTX 3060 Ti",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/gigabyte-geforce-rtx-3060-ti-vision-oc-8gb-gddr6-reacondicionado",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "joseramon":{
+                    "delayBetween": 600
+                }
+            },
+            "desiredPrice": 780.10,
+            "desiredPriceOffset": 20
+        },
+        {
+            "name": "Asus ROG Strix GeForce RTX 3060 OC Edition 12GB GDDR6 Reacondicionado",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/asus-rog-strix-geforce-rtx-3060-oc-edition-12gb-gddr6-reacondicionado",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "joseramon":{
+                    "delayBetween": 600
+                }
+            },
+            "desiredPrice": 780.10,
+            "desiredPriceOffset": 20
+        },
+        {
+            "name": "MSI GeForce RTX 3060 GAMING X 12GB GDDR6 Reacondicionado",
+            "store": "pccomponentes",
+            "url": "https://www.pccomponentes.com/msi-geforce-rtx-3060-gaming-x-12gb-gddr6-reacondicionado",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                },
+                "joseramon":{
+                    "delayBetween": 600
+                }
+            },
+            "desiredPrice": 780.10,
+            "desiredPriceOffset": 20
         }
     ]
 }
