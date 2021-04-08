@@ -144,6 +144,9 @@ class settings_game_by_search_item(setting_store_item):
 class setting_coolmod_item(setting_store_desired_price_item):
     pass
 
+class setting_mediamark_item(setting_store_desired_price_item):
+    pass
+
 def log(color:bcolors, col1: str, col2:str, col3: str, col4: str, col5: str, col6: str):
     max_col2: int = 35
     col2 = col2[:max_col2-3] + (col2[max_col2-3:], '...')[len(col2) > max_col2]
@@ -370,9 +373,20 @@ def search_in_game_store_by_search(item, session:requests.Session):
     lookSearchElements = json.loads(page.text)
 
     for item in lookSearchElements['Products']:
+
         result_item = item_game(item)
-        if result_item.isNew:
-            
+        if not result_item.family_Name == 'PLAYSTATION 5':
+            log(bcolors.OKCYAN
+                    , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
+                    , f'{result_item.name}'
+                    , f'{result_item.sellPrice}€'
+                    , ''
+                    , '(game.es)'
+                    , f'FALSE POSITIVE'
+                )
+            return True
+
+        if result_item.isNew:   
             if result_item.hasStock:
                 log(bcolors.OKGREEN
                     , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
@@ -600,7 +614,7 @@ def search_in_coolmod(item, session:requests.Session):
     #asdfsf= soup_javascripts   
 
 def search_in_mediamark(item, session:requests.Session):
-    x = setting_coolmod_item(item)
+    x = setting_mediamark_item(item)
 
     if x.ignore == True: return False
     
@@ -616,7 +630,7 @@ def search_in_mediamark(item, session:requests.Session):
             , f'{x.name}'
             , ''
             , f'({x.desiredPrice}€)'
-            , '(coolmod.com)'
+            , '(mediamarkt.es)'
             , f'ERROR STATUS CODE {page.status_code}!!!')
 
         return False
@@ -820,10 +834,15 @@ def main_v2():
         try:
             #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             for itemsStore in settings.group_by_store:
-                function = settings.storeConfig[itemsStore].function
-                item = settings.group_by_store[itemsStore]
-                function(item)
-            
+                function_name = settings.storeConfig[itemsStore].function.__name__
+                try:
+                    function = settings.storeConfig[itemsStore].function
+                    item = settings.group_by_store[itemsStore]
+                    function(item)
+                except Exception as e:
+                    log(bcolors.RED,datetime.utcnow().strftime("%d-%m-%y %H:%M:%S"),'','','',f'{function_name}', 'Error Unknow store')
+                    continue
+                
             offset = datetime.utcnow() - lastReadConfigTime
 
             if offset.total_seconds() > settings.readConfigEachSeconds:
