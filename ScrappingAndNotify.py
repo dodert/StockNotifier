@@ -126,6 +126,12 @@ class setting_store_desired_price_item (setting_store_item):
 class setting_pccomponentes_item(setting_store_desired_price_item):
     pass
 
+class setting_fnac_item(setting_store_desired_price_item):
+    urlStock: str = ''
+    def __init__(self, json_item):
+        setting_store_desired_price_item.__init__(self, json_item)
+        if "urlStock" in json_item: self.urlStock = json_item['urlStock']
+
 class settings_amazon_item(setting_store_desired_price_item):
     pass
 
@@ -136,6 +142,9 @@ class settings_game_by_search_item(setting_store_item):
         if "criteria" in json_item: self.criteria = json_item['criteria']
 
 class setting_coolmod_item(setting_store_desired_price_item):
+    pass
+
+class setting_mediamark_item(setting_store_desired_price_item):
     pass
 
 def log(color:bcolors, col1: str, col2:str, col3: str, col4: str, col5: str, col6: str):
@@ -189,8 +198,6 @@ def search_in_pccomponentes_store_v2(item, session:requests.Session):
     #lookPrice = soup.find(id='priceBlock')
 
 def search_in_pccomponentes_store(x, session:requests.Session):
-
-    #x = setting_pccomponentes_item(item)
 
     if x.ignore == True: return False
 
@@ -270,6 +277,81 @@ def search_in_pccomponentes_store(x, session:requests.Session):
 
     return True
 
+def search_in_fnac_store(x, session:requests.Session):
+    if x.ignore == True: return False
+
+    headers = {
+        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 11_2_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.150 Safari/537.36',
+        'accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+        'accept-language': 'es-ES,es;q=0.9'
+    }
+
+    page = session.get(x.urlStock, timeout= x.timeoutRequest,headers = headers)
+    if not page.status_code == HTTPStatus.OK:
+        log(bcolors.RED
+            ,datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
+            , f'{x.name}'
+            , ''
+            , f'({x.desiredPrice}€)'
+            , '(fnac.es)'
+            , f'ERROR STATUS CODE {page.status_code}!!!')
+
+        return False
+
+    soup = BeautifulSoup(page.content, 'html.parser')
+    lookStock = soup.find(class_='f-buyShopBox')
+
+    #esto checquea stock online, falta dispiniviladad entienda, peor no merece la pena
+    availability = lookStock.find_all('div', class_='f-buyBox-availability f-buyBox-availabilityStatus-available')
+
+    lookPrices = soup.find_all('div', class_='f-productOffer f-productOffer--options clearfix')
+    price:float = 0
+
+    for item in lookPrices: 
+        price_tag = item.find('span', class_='f-priceBox-price f-priceBox-price--reco checked')
+        if price_tag is not None:
+            price_text = price_tag.text
+            if price_text != '':
+                price_text = price_text.replace('€','').replace(',','.')
+                price =  float(price_text)
+
+    if len(availability) >= 1:
+        log(bcolors.OKGREEN
+            , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
+            , f'{x.name}'
+            , f'{price}€'
+            , f'({x.desiredPrice}€)'
+            , '(fnac.es)'
+            , f'FOUND!!!')
+
+        if settings.onlySendPushWhenMatchPrice:
+            if x.sendpush and x.desiredPrice >= price - x.desiredPriceOffset:
+                x.sendpush = True
+            else:
+                x.sendpush = False            
+
+        if x.sendpush == True:            
+            send_push(f'{x.name} {price}€ ({x.desiredPrice}€) FOUND!!!\nFnac',
+                f'{x.name} FOUND!!!!',
+                f'{x.name} {price}€',
+                x.url,
+                x.sendpush_to
+            )
+            
+        else:
+            print(f' Push not send. sendpush: {x.sendpush} settings.disablePushForAll: {settings.disablePushForAll}')
+    else:
+        log(bcolors.RED
+            , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
+            , f'{x.name}'
+            , f'{price}€'
+            , f'({x.desiredPrice}€)'
+            , '(fnac.es)'
+            , f'OUT OF STOCK')
+
+    
+    return True
+
 def search_in_game_store_by_search(item, session:requests.Session):
     
     x = settings_game_by_search_item(item)
@@ -291,9 +373,20 @@ def search_in_game_store_by_search(item, session:requests.Session):
     lookSearchElements = json.loads(page.text)
 
     for item in lookSearchElements['Products']:
+
         result_item = item_game(item)
-        if result_item.isNew:
-            
+        if not result_item.family_Name == 'PLAYSTATION 5':
+            log(bcolors.OKCYAN
+                    , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
+                    , f'{result_item.name}'
+                    , f'{result_item.sellPrice}€'
+                    , ''
+                    , '(game.es)'
+                    , f'FALSE POSITIVE'
+                )
+            return True
+
+        if result_item.isNew:   
             if result_item.hasStock:
                 log(bcolors.OKGREEN
                     , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
@@ -521,7 +614,7 @@ def search_in_coolmod(item, session:requests.Session):
     #asdfsf= soup_javascripts   
 
 def search_in_mediamark(item, session:requests.Session):
-    x = setting_coolmod_item(item)
+    x = setting_mediamark_item(item)
 
     if x.ignore == True: return False
     
@@ -537,7 +630,7 @@ def search_in_mediamark(item, session:requests.Session):
             , f'{x.name}'
             , ''
             , f'({x.desiredPrice}€)'
-            , '(coolmod.com)'
+            , '(mediamarkt.es)'
             , f'ERROR STATUS CODE {page.status_code}!!!')
 
         return False
@@ -609,6 +702,27 @@ def process_pccpmponentes(items):
         f.flush()
         if return_satus:
             time.sleep(settings.delayPerItem)
+
+def process_fnac(items):
+    session_fnac:requests.Session = None
+    if session_fnac is None: session_fnac = requests.Session()
+    for item in items:
+        x = setting_fnac_item(item)
+        try:
+            return_satus = search_in_fnac_store(x, session_fnac)
+        except Exception as e:
+            log(bcolors.RED
+                , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
+                , f'{x.name}'
+                , ''
+                , f'({x.desiredPrice}€)'
+                , '(fnac.es)'
+                , f'ERROR')
+                
+        f.flush()
+        if return_satus:
+            time.sleep(settings.delayPerItem)
+
 
 def process_amazon(items):
     session_amazon:requests.Session = None
@@ -720,10 +834,15 @@ def main_v2():
         try:
             #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             for itemsStore in settings.group_by_store:
-                function = settings.storeConfig[itemsStore].function
-                item = settings.group_by_store[itemsStore]
-                function(item)
-            
+                function_name = settings.storeConfig[itemsStore].function.__name__
+                try:
+                    function = settings.storeConfig[itemsStore].function
+                    item = settings.group_by_store[itemsStore]
+                    function(item)
+                except Exception as e:
+                    log(bcolors.RED,datetime.utcnow().strftime("%d-%m-%y %H:%M:%S"),'','','',f'{function_name}', 'Error Unknow store')
+                    continue
+                
             offset = datetime.utcnow() - lastReadConfigTime
 
             if offset.total_seconds() > settings.readConfigEachSeconds:
@@ -755,83 +874,5 @@ def main_v2():
 
         f.close()
 
-def main():
-    readConfigFile()
-
-    if settings.readConfigEachSeconds > 0:
-        session_coolmod:requests.Session = None
-        session_pccomponentes:requests.Session = None
-        session_game:requests.Session = None
-        session_amazon:requests.Session = None
-        session_mediamark:requests.Session = None
-
-        lastReadConfigTime = datetime.utcnow()
-        #with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
-
-        while True:
-            global f
-            f = open(settings.filetoLog, "a")
-            startloopTime = datetime.utcnow() 
-            log(bcolors.OKBLUE, '', '', '' , '', 'Loop Start: ', startloopTime)
-            try:
-                for item in settings.itemsToLookFor:
-                    store = item['store']
-                    type_ = ''
-                    if "type" in item: type_ = item['type']
-                    return_satus: bool = False
-
-                    if store == 'pccomponentes':
-                        if session_pccomponentes is None: session_pccomponentes = requests.Session()
-                        return_satus = search_in_pccomponentes_store(item, session_pccomponentes)
-                        #return_satus = search_in_pccomponentes_store_v2(item)
-                        
-                    elif store == 'game' and type_ == 'Search':
-                        if session_game is None: session_game = requests.Session()
-                        return_satus = search_in_game_store_by_search(item, session_game)
-                    elif store == 'amazon':
-                        if session_amazon is None: session_amazon = requests.Session()
-                        return_satus = search_in_amazon(item, session_amazon)
-                    elif store == 'coolmod':
-                        if session_coolmod is None: session_coolmod = requests.Session()
-                        return_satus = search_in_coolmod(item, session_coolmod)
-                    elif store == 'mediamark':
-                        if session_mediamark is None: session_mediamark = requests.Session()
-                        return_satus = search_in_mediamark(item, session_mediamark)
-                        
-                    else:
-                        continue
-
-                    f.flush()
-                    if return_satus:
-                        time.sleep(settings.delayPerItem)
-            except Exception as e:
-                print (f'{datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")}\t {bcolors.RED}Error unknow {bcolors.ENDC}\n{e}')  
-                time.sleep(settings.delayIfException) 
-                continue
-            
-
-            offset = datetime.utcnow() - lastReadConfigTime
-
-            if offset.total_seconds() > settings.readConfigEachSeconds:
-                f.write(f'\nReading config file again')
-                print(f'Reading config file again')
-                readConfigFile()
-                lastReadConfigTime = datetime.utcnow()
-
-            log(bcolors.OKBLUE, '', '', '' , f'takes {(datetime.utcnow() - startloopTime).total_seconds()}', 'Loop Ends: ', datetime.utcnow() )
-            
-            if settings.stopProcess == True:
-                f.write(f'\nProcess stopped')
-                print(f'Process stopped')
-                f.close()
-                break
-
-            f.close()
-    else:
-        f.write(f'\nreadConfigEachSeconds not configured!!!!')
-        print('readConfigEachSeconds not configured!!!!')
-
 if __name__ == '__main__':
-    #main()
-    
     main_v2()

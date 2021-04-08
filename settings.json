@@ -3,7 +3,7 @@
     "enableLogInfo": false,
     "writelog": true,
     "delayIfException": 60,
-    "delayPerItem": 1,
+    "delayPerItem": 2,
     "readConfigEachSeconds": 60,
     "stopProcess": false,
     "filetoLog": "log.txt",
@@ -30,6 +30,10 @@
         "mediamark":{
             "function": "process_mediamark",
             "timeoutRequest": 5
+        },
+        "fnac":{
+            "function": "process_fnac",
+            "timeoutRequest": 5
         }
 
     },
@@ -38,9 +42,85 @@
         "amazon": 5,
         "game": 5,
         "coolmod": 10,
-        "mediamark": 5
+        "mediamark": 5,
+        "fnac": 5
     },
     "items": [
+        {
+            "name": "The last of us",
+            "store": "fnac",
+            "url": "https://www.fnac.es/The-Last-of-Us-Parte-II-PS4-Juego-PS4/a7004048",
+            "urlStock": "https://www.fnac.es/Nav/API/FnacOfferTab/7004048/1",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
+            "desiredPrice": 30,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Consola Playstation 5",
+            "store": "fnac",
+            "url": "https://www.fnac.es/Consola-PlayStation-5-Videoconsola-Consola/a7724798",
+            "urlStock": "https://www.fnac.es/Nav/API/FnacOfferTab/7724798/1",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
+            "desiredPrice": 499,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Consola Playstation 5 Digital",
+            "store": "fnac",
+            "url": "https://www.fnac.es/Consola-PlayStation-5-Edicion-Digital-Videoconsola-Consola/a7724836",
+            "urlStock": "https://www.fnac.es/Nav/API/FnacOfferTab/7724836/1",
+            "ignore": false,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
+            "desiredPrice": 399,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "Xbox one x forza",
+            "store": "fnac",
+            "url": "https://www.fnac.es/Consola-XBox-One-X-1-TB-LEGO-Forza-Horizon-4-DLC-LEGO-Videoconsola-Consola/a7033910",
+            "urlStock": "https://www.fnac.es/Nav/API/FnacOfferTab/7033910/1",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
+            "desiredPrice": 499,
+            "desiredPriceOffset": 10
+        },
+        {
+            "name": "ps4",
+            "store": "fnac",
+            "url": "https://www.fnac.es/Consola-PS4-Pro-1TB-Negro-Videoconsola-Consola/a6488571",
+            "urlStock": "https://www.fnac.es/Nav/API/FnacOfferTab/6488571/1",
+            "ignore": true,
+            "sendpush": true,
+            "sendpush_to": {
+                "benja":{
+                    "delayBetween": 1800
+                }
+            },
+            "desiredPrice": 499,
+            "desiredPriceOffset": 10
+        },
         {
             "name": "Consola Playstation 5",
             "store": "mediamark",
