@@ -1,8 +1,8 @@
 {
     "url_push": "https://api.pushover.net/1/messages.json",
     "users_pushKeys": {
-        "benja": "",
-        "hector": ""
+        "useridentifier1": "",
+        "useridentifier2": ""
     },
     "token_push": ""
 }

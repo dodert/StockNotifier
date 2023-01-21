@@ -222,14 +222,19 @@ def search_in_pccomponentes_store(x, session:requests.Session):
     lookStock = soup.find(id='btnsWishAddBuy')
     lookPrice = soup.find(id='priceBlock')
     lookPriceElement = lookPrice.find_all('div', id='precio-main')
+
+    if lookStock is not None: #means nothing to check stock, then no stock
+        #return False
+        bothABClassP = re.compile("(?=.*btn)(?=.*btn-primary)(?=.*btn-lg)(?=.*buy)(?=.*GTM-addToCart)(?=.*buy-button)(?=.*js-article-buy)", re.I)
+        job_elems = lookStock.find_all('button',attrs={"class": bothABClassP})
+
+
     price:float = 0
+
     if len(lookPriceElement) == 1:
         price = float(lookPriceElement[0].get('data-price'))
 
-    bothABClassP = re.compile("(?=.*btn)(?=.*btn-primary)(?=.*btn-lg)(?=.*buy)(?=.*GTM-addToCart)(?=.*buy-button)(?=.*js-article-buy)", re.I)
-    job_elems = lookStock.find_all('button',attrs={"class": bothABClassP})
-
-    if len(job_elems) > 0:
+    if lookStock is not None and len(job_elems) > 0:
 
         soup_data_offer = job_elems[0].get('data-offer')
         if soup_data_offer is not None and int(soup_data_offer) > 0 : #to now if is sell by 3th party
@@ -375,7 +380,8 @@ def search_in_game_store_by_search(item, session:requests.Session):
     for item in lookSearchElements['Products']:
 
         result_item = item_game(item)
-        if not result_item.family_Name == 'PLAYSTATION 5':
+        
+        if 'Playstation 5' in x.name and not result_item.family_Name == 'PLAYSTATION 5':
             log(bcolors.OKCYAN
                     , datetime.utcnow().strftime("%d-%m-%y %H:%M:%S")
                     , f'{result_item.name}'

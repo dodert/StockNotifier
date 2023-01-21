@@ -8,6 +8,7 @@ class item_game:
     name: str = ''
     isReserve: bool = False
     hasStock: bool = False
+    family_Name: str = ''
     __base_url: str = 'https://www.game.es/'
     def __init__(self, json_item ):
         if "Navigation" in json_item: self.url = f"{self.__base_url}{json_item['Navigation']}"
@@ -17,5 +18,5 @@ class item_game:
         if "SellPrice" in json_item['Offers'][0]: self.sellPrice = json_item['Offers'][0]['SellPrice']
         if "IsReserve" in json_item['Offers'][0]: self.isReserve = json_item['Offers'][0]['IsReserve']
         if "Name" in json_item: self.name = json_item['Name']
-
+        if "FamilyName" in json_item: self.family_Name = json_item['FamilyName']  
         if self.buttonText == 'Comprar': self.hasStock = True
